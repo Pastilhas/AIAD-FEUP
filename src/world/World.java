@@ -1,5 +1,7 @@
 package world;
 
+import agents.Audience;
+import agents.Competitor;
 import agents.Person;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -9,14 +11,15 @@ import jade.wrapper.ContainerController;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 
 public class World {
     static final int maxPrice = 15000;
 
-    private final ArrayList<Person> audience;
-    private final ArrayList<Person> competitors;
-    private final ArrayList<Integer> itemPrice;
+    private final ArrayList<Audience> audience;
+    private final ArrayList<Competitor> competitors;
+    private final HashMap<String, Integer> itemPrice;
     private final ArrayList<String> teams;
     private final float selfconfidenceRate;
     private final int maxAudience;
@@ -35,7 +38,7 @@ public class World {
 
         audience  = new ArrayList<>();
         competitors = new ArrayList<>();
-        itemPrice = new ArrayList<>();
+        itemPrice = new HashMap<>();
         teams = new ArrayList<>();
 
         rt = Runtime.instance();
@@ -51,7 +54,7 @@ public class World {
     private void generateItems() {
         for (int i = 0; i < maxItems; i++) {
             Random rnd = new Random();
-            itemPrice.add(rnd.nextInt(maxPrice));
+            itemPrice.put(Integer.toString(i), rnd.nextInt(maxPrice));
         }
     }
 
@@ -60,7 +63,19 @@ public class World {
             try {
                 String id = "audience_" + i;
                 Random rnd = new Random();
-                Person p = new Person(id, rnd.nextFloat() < selfconfidenceRate);
+                Audience p = new Audience(id, rnd.nextFloat() < selfconfidenceRate);
+
+                int max = rnd.nextInt(maxItems/2);
+                for(int j = 0; j < max; j++) {
+                    int id_item = rnd.nextInt(maxItems);
+                    p.addItem(id_item, itemPrice.get(id_item));
+                }
+
+                for(String t : teams) {
+                    int ta = rnd.nextInt(101);
+                    p.addTeam(t, ta);
+                }
+
                 audience.add(p);
                 AgentController ac = this.cc.acceptNewAgent(id, p);
                 ac.start();
@@ -73,7 +88,13 @@ public class World {
             try {
                 String id = "competitor_" + i;
                 Random rnd = new Random();
-                Person p = new Person(id, rnd.nextFloat() < selfconfidenceRate);
+                Competitor p = new Competitor(id);
+
+                for(String t : teams) {
+                    int ta = rnd.nextInt(101);
+                    p.addTeam(t, ta);
+                }
+
                 competitors.add(p);
                 AgentController ac = this.cc.acceptNewAgent(id, p);
                 ac.start();

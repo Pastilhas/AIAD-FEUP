@@ -5,13 +5,16 @@ import jade.core.Agent;
 import java.util.HashMap;
 
 public class Person extends Agent {
-    private final String id;
-    private final boolean selfconfidence;
-    private final HashMap<String, Integer> itemPriceMap;
+    final String id;
+    final HashMap<String, Integer> teamAffinity;
 
-    public Person(String id, boolean selfconfidence) {
+    public Person(String id) {
         this.id = id;
-        this.selfconfidence = selfconfidence;
-        itemPriceMap = new HashMap<>();
+        teamAffinity = new HashMap<>();
+    }
+
+    public void addTeam(String id, Integer value) {
+        if(value != null)
+            teamAffinity.put(id, value);
     }
 }
