@@ -9,28 +9,28 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 
-public class AudienceShareGuess extends SimpleBehaviour {
+public class AudienceSendGuess extends SimpleBehaviour {
     private boolean finished = false;
     private final Audience audience;
 
-    public AudienceShareGuess(Audience audience) {
+    public AudienceSendGuess(Audience audience) {
         this.audience = audience;
     }
 
     @Override
     public void action() {
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.setContent(Integer.toString(audience.getGuess(null)));
 
         DFAgentDescription dfd = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("audience");
+        sd.setType("competitor");
         dfd.addServices(sd);
 
         try {
             DFAgentDescription[] res = DFService.search(audience, dfd);
             for (DFAgentDescription re : res) {
                 AID rcv = re.getName();
+                msg.setContent(Integer.toString(audience.getGuess(rcv)));
                 msg.addReceiver(rcv);
                 audience.send(msg);
             }

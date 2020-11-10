@@ -6,8 +6,6 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
-import java.util.HashMap;
-
 public class Competitor extends Person {
     private final DFAgentDescription dfd;
 

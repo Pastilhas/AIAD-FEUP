@@ -1,5 +1,7 @@
 package agents;
 
+import behaviours.AudienceShareGuess;
+import jade.core.AID;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -12,6 +14,7 @@ public class Audience extends Person {
     private final boolean selfconfidence;
     private final HashMap<String, Integer> itemPrice;
     private final DFAgentDescription dfd;
+    private final HashMap<AID, Integer> compatibility;
     private int guess;
 
     public Audience(String id, boolean selfconfidence) {
@@ -19,6 +22,7 @@ public class Audience extends Person {
         this.selfconfidence = selfconfidence;
         itemPrice = new HashMap<>();
         dfd = new DFAgentDescription();
+        compatibility = new HashMap<>();
     }
 
     public void addItem(int id, Integer price) {
@@ -39,13 +43,30 @@ public class Audience extends Person {
             System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
         }
 
+        behaviours();
+    }
+
+    public void behaviours() {
         // Setup behaviours
         SequentialBehaviour sb = new SequentialBehaviour();
-        //sb.addSubBehaviour();
+        sb.addSubBehaviour(new AudienceShareGuess(this));
         addBehaviour(sb);
     }
 
-    public int getGuess() {
-        return guess;
+    public Integer getGuess(AID rcv) {
+        // Share with rest of audience
+        if(rcv == null || compatibility.get(rcv) > 50) {
+            return guess;
+        } else {    // Share with competitors
+            return null;
+        }
+    }
+
+    public HashMap<AID, Integer> getCompatibility() {
+        return compatibility;
+    }
+
+    public void checkCompetitor(AID competitor, HashMap<String, Integer> map) {
+
     }
 }
