@@ -16,13 +16,18 @@ public class AudienceShareGuess extends SimpleBehaviour {
 
     @Override
     public void action() {
+        if (audience.getGuess(null) == null) return;
+
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.setContent(Integer.toString(audience.getGuess(null)));
+        int guess = audience.getGuess(null);
+        msg.setContent(Integer.toString(guess));
 
         DFAgentDescription[] res = audience.getAudience();
         for (DFAgentDescription re : res) {
             AID rcv = re.getName();
+            if(audience.getLocalName().equals(rcv.getLocalName())) continue;
             msg.addReceiver(rcv);
+            System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
             audience.send(msg);
         }
 

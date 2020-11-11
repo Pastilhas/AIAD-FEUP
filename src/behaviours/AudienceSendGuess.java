@@ -21,8 +21,11 @@ public class AudienceSendGuess extends SimpleBehaviour {
         DFAgentDescription[] res = audience.getCompetitor();
         for (DFAgentDescription re : res) {
             AID rcv = re.getName();
-            msg.setContent(Integer.toString(audience.getGuess(rcv)));
+            if(audience.getLocalName().equals(rcv.getLocalName())) continue;
+            int guess = audience.getGuess(rcv.getLocalName());
+            msg.setContent(Integer.toString(guess));
             msg.addReceiver(rcv);
+            System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
             audience.send(msg);
         }
 

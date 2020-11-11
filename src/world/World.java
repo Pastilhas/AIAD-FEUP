@@ -8,12 +8,9 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
-public class World {
+public class World extends jade.Boot{
     static final int maxPrice = 15000;
 
     private final ArrayList<Audience> audience;
@@ -41,7 +38,7 @@ public class World {
         teams = new ArrayList<>();
 
         rt = Runtime.instance();
-        p = new ProfileImpl(true);
+        p = new ProfileImpl("localhost", 9091, null, true);
         cc = rt.createMainContainer(p);
 
         // Generate items and people
@@ -110,9 +107,60 @@ public class World {
     }
 
     private void playRound() {
+        // 1. Select item
+        Random rnd = new Random();
+        int item_id = rnd.nextInt(maxItems);
+
+        // 2. Tell item to audience
+        for(Audience au : audience) {
+            au.startRound(Integer.toString(item_id));
+        }
+
+        // Wait audience to decide guesses
+        HashSet<String> readyAudience = new HashSet<>();
+        while(readyAudience.size() < audience.size()) {
+            for(Audience au : audience) {
+                if(au.ready) {
+                    readyAudience.add(au.getLocalName());
+                }
+            }
+        }
+
+        // 3. Competitors send request
+        for(Competitor cm : competitors) {
+            cm.startRound();
+        }
+
+        // 4. Wait for competitors
+        HashMap<String, Integer> guesses = new HashMap<>();
+        while(guesses.size() < competitors.size()) {
+            for(Competitor cm : competitors) {
+                if(cm.ready) {
+                    guesses.putIfAbsent(cm.getLocalName(), cm.getGuess());
+                }
+            }
+        }
+
+        // 5. Declare winner
+        String winner;
+        int guess = Integer.MIN_VALUE;
+        for(Map.Entry<String, Integer> entry : guesses.entrySet()) {
+            if(Math.abs(itemPrice.get(item_id) - entry.getValue()) < Math.abs(itemPrice.get(item_id) - guess)){
+                winner = entry.getKey();
+                guess = entry.getValue();
+            }
+        }
+
+        // 6. End Round
+        for(Audience au : audience) {
+            au.endRound(itemPrice.get(item_id));
+        }
+        for(Competitor cm : competitors) {
+            cm.endRound(itemPrice.get(item_id));
+        }
     }
 
-    // int maxAudience, int maxCompetitors, int maxItems, int tries, int rounds
+    // int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, int tries, int rounds
     public static void main(String[] args) {
         int tries = 0;
         int round = 0;
@@ -120,7 +168,7 @@ public class World {
 
         while (tries < Integer.parseInt(args[4])) {
             world = new World(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Float.parseFloat(args[3]));
-
+            System.out.println("World created");
             while (round < Integer.parseInt(args[5])) {
                 world.playRound();
                 round++;

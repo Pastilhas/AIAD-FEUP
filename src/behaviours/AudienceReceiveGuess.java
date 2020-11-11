@@ -1,7 +1,6 @@
 package behaviours;
 
 import agents.Audience;
-import jade.core.AID;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
@@ -20,13 +19,11 @@ public class AudienceReceiveGuess extends SimpleBehaviour {
 
         if (msg != null) {
             if (msg.getSender().getLocalName().startsWith("audience")) {
-                try {
-                    String guess = (String) msg.getContentObject();
-                    AID sender = msg.getSender();
-                    audience.receiveGuess(sender, Integer.parseInt(guess));
-                } catch (UnreadableException e) {
-                    System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
-                }
+                String guess = msg.getContent();
+                String sender = msg.getSender().getLocalName();
+                if (!audience.getGuesses().containsKey(sender))
+                    System.out.println("Audience " + audience.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
+                audience.receiveGuess(sender, Integer.parseInt(guess));
             }
         } else {
             block();

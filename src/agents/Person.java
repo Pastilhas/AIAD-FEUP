@@ -6,20 +6,34 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
-public class Person extends Agent {
+public abstract class Person extends Agent {
     final String id;
     final HashMap<String, Integer> teamAffinity;
+    final HashMap<String, Integer> guesses;
+    final HashMap<String, Float> confidence;
+    Integer guess;
 
     public Person(String id) {
         this.id = id;
         teamAffinity = new HashMap<>();
+        guesses = new HashMap<>();
+        confidence = new HashMap<>();
+        guess = null;
     }
+
+    public abstract void behaviours();
 
     public void addTeam(String id, Integer value) {
         if (value != null)
             teamAffinity.put(id, value);
+    }
+
+    public HashMap<String, Integer> getGuesses() {
+        return guesses;
     }
 
     public DFAgentDescription[] getCompetitor() {
@@ -44,5 +58,28 @@ public class Person extends Agent {
         }
 
         return res;
+    }
+
+    public void receiveGuess(String audience, Integer guess) {
+        guesses.put(audience, guess);
+        confidence.putIfAbsent(audience, 1.0f);
+    }
+
+    public void endRound(int price) {
+        updateConfidence(price);
+        guess = null;
+        guesses.clear();
+    }
+
+    private void updateConfidence(int price) {
+        Integer min = Collections.min(guesses.values());
+        Integer max = Collections.max(guesses.values());
+        int maxDiff = Math.max(Math.abs(price - min), Math.abs(price - max));
+
+        for (Map.Entry<String, Float> entry : confidence.entrySet()) {
+            int diff = Math.abs(guesses.get(entry.getKey()) - price);
+            confidence.replace(entry.getKey(), entry.getValue() * (1.5f - diff / maxDiff));
+        }
+
     }
 }
