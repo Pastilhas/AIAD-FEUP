@@ -18,15 +18,19 @@ public class Person extends Agent {
     }
 
     public void addTeam(String id, Integer value) {
-        if(value != null)
+        if (value != null)
             teamAffinity.put(id, value);
     }
 
-    public int getCompetitorLength(){ return getTypeLength("competitor"); }
+    public DFAgentDescription[] getCompetitor() {
+        return getService("competitor");
+    }
 
-    public int getAudienceLength(){ return getTypeLength("audience"); }
+    public DFAgentDescription[] getAudience() {
+        return getService("audience");
+    }
 
-    public int getTypeLength(String type) {
+    public DFAgentDescription[] getService(String type) {
         DFAgentDescription[] res = null;
 
         try {
@@ -39,6 +43,6 @@ public class Person extends Agent {
             e.printStackTrace();
         }
 
-        return res.length;
+        return res;
     }
 }

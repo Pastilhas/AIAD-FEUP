@@ -3,7 +3,6 @@ package behaviours;
 import agents.Audience;
 import jade.core.AID;
 import jade.core.behaviours.SimpleBehaviour;
-import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
@@ -21,14 +20,12 @@ public class AudienceReceiveRequest extends SimpleBehaviour {
     public void action() {
         ACLMessage msg = audience.blockingReceive();
 
-        if(msg != null) {
-            if(msg.getSender().getLocalName().substring(0, 10).equals("competitor")) {
+        if (msg != null) {
+            if (msg.getSender().getLocalName().startsWith("competitor")) {
                 try {
                     HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
-                    AID competitor = msg.getSender();
-
-                    // check compatibility with competitor
-                    audience.checkCompetitor(competitor, map);
+                    AID sender = msg.getSender();
+                    audience.checkCompetitor(sender, map);
                 } catch (UnreadableException e) {
                     System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
                 }
@@ -37,11 +34,13 @@ public class AudienceReceiveRequest extends SimpleBehaviour {
             block();
         }
 
-        if(audience.getCompatibility().size() == audience.getCompetitorLength()) {
+        if (audience.getCompatibility().size() == audience.getCompetitor().length) {
             finished = true;
         }
     }
 
     @Override
-    public boolean done() { return finished; }
+    public boolean done() {
+        return finished;
+    }
 }
