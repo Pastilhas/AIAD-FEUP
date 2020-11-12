@@ -109,11 +109,11 @@ public class World extends jade.Boot{
     private void playRound() {
         // 1. Select item
         Random rnd = new Random();
-        int item_id = rnd.nextInt(maxItems);
+        String item_id = Integer.toString(rnd.nextInt(maxItems));
 
         // 2. Tell item to audience
         for(Audience au : audience) {
-            au.startRound(Integer.toString(item_id));
+            au.startRound(item_id);
         }
 
         // Wait audience to decide guesses
@@ -142,6 +142,7 @@ public class World extends jade.Boot{
         }
 
         // 5. Declare winner
+        System.out.println(guesses.values());
         String winner;
         int guess = Integer.MIN_VALUE;
         for(Map.Entry<String, Integer> entry : guesses.entrySet()) {

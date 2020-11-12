@@ -9,6 +9,7 @@ import jade.domain.FIPAException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public abstract class Person extends Agent {
     final String id;
@@ -62,7 +63,10 @@ public abstract class Person extends Agent {
 
     public void receiveGuess(String audience, Integer guess) {
         guesses.put(audience, guess);
-        confidence.putIfAbsent(audience, 1.0f);
+        if(!confidence.containsKey(audience)){
+            Random rnd = new Random();
+            confidence.put(audience, rnd.nextFloat()+0.2f);
+        }
     }
 
     public void endRound(int price) {
