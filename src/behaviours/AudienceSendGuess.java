@@ -22,11 +22,14 @@ public class AudienceSendGuess extends SimpleBehaviour {
         for (DFAgentDescription re : res) {
             AID rcv = re.getName();
             if(audience.getLocalName().equals(rcv.getLocalName())) continue;
-            int guess = audience.getGuess(rcv.getLocalName());
-            msg.setContent(Integer.toString(guess));
-            msg.addReceiver(rcv);
-            System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
-            audience.send(msg);
+
+            if(audience.getGuess(rcv.getLocalName()) == (int)audience.getGuess(rcv.getLocalName()) ) {
+                int guess = audience.getGuess(rcv.getLocalName());
+                msg.setContent(Integer.toString(guess));
+                msg.addReceiver(rcv);
+                System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
+                audience.send(msg);
+            }
         }
 
         finished = true;
