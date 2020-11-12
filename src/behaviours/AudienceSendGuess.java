@@ -21,27 +21,13 @@ public class AudienceSendGuess extends SimpleBehaviour {
         DFAgentDescription[] res = audience.getCompetitor();
         for (DFAgentDescription re : res) {
             AID rcv = re.getName();
-            if(audience.getLocalName().equals(rcv.getLocalName())) continue;
-
-            try{
-                int guess = audience.getGuess(rcv.getLocalName());
-                msg.setContent(Integer.toString(guess));
-                msg.addReceiver(rcv);
-                System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
-                audience.send(msg);
-            } catch (Exception e) {
-                System.out.println("Audience " + audience.getLocalName() + " did NOT send a guess" );
-            }
-
-//            try{
-//                int guess = audience.getGuess(rcv.getLocalName());
-//                msg.setContent(Integer.toString(guess));
-//                msg.addReceiver(rcv);
-//                System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
-//                audience.send(msg);
-//            } catch (Exception e) {
-//                System.out.println("Audience " + audience.getLocalName() + " did NOT send a guess" );
-//            }
+            if (audience.getLocalName().equals(rcv.getLocalName())) continue;
+            Integer guess = audience.getGuess(rcv.getLocalName());
+            if(guess == null) continue;
+            msg.setContent(Integer.toString(guess));
+            msg.addReceiver(rcv);
+            System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
+            audience.send(msg);
         }
 
         finished = true;
