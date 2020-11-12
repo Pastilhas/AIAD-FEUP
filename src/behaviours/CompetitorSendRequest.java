@@ -5,8 +5,10 @@ import jade.core.AID;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import util.LogUtil;
 
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.Objects;
 
 public class CompetitorSendRequest extends SimpleBehaviour {
@@ -29,7 +31,9 @@ public class CompetitorSendRequest extends SimpleBehaviour {
                 if(competitor.getLocalName().equals(rcv.getLocalName())) continue;
                 msg.setContentObject(competitor.getRequest());
                 msg.addReceiver(rcv);
-                System.out.println("Competitor " + competitor.getLocalName() + " SENT request TO agent: " + rcv.getLocalName());
+                String logMsg = "Competitor " + competitor.getLocalName() + " SENT request TO agent: " + rcv.getLocalName();
+                System.out.println(logMsg);
+                LogUtil.writeToLog(logMsg, LocalTime.now());
                 competitor.send(msg);
             } catch (IOException e) {
                 System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());

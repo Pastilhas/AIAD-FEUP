@@ -3,7 +3,9 @@ package behaviours;
 import agents.Audience;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.UnreadableException;
+import util.LogUtil;
+
+import java.time.LocalTime;
 
 public class AudienceReceiveGuess extends SimpleBehaviour {
     private boolean finished = false;
@@ -22,7 +24,10 @@ public class AudienceReceiveGuess extends SimpleBehaviour {
                 String guess = msg.getContent();
                 String sender = msg.getSender().getLocalName();
                 if (!audience.getGuesses().containsKey(sender)) {
-                    System.out.println("Audience " + audience.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
+                    String logMsg = "Audience " + audience.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender;
+                    System.out.println(logMsg);
+                    LogUtil.writeToLog(logMsg, LocalTime.now());
+
                     audience.receiveGuess(sender, Integer.parseInt(guess));
                 }
             }

@@ -5,6 +5,9 @@ import jade.core.AID;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import util.LogUtil;
+
+import java.time.LocalTime;
 
 public class AudienceShareGuess extends SimpleBehaviour {
     private boolean finished = false;
@@ -27,7 +30,11 @@ public class AudienceShareGuess extends SimpleBehaviour {
             AID rcv = re.getName();
             if(audience.getLocalName().equals(rcv.getLocalName())) continue;
             msg.addReceiver(rcv);
-            System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
+
+            String logMsg = "Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName();
+            System.out.println(logMsg);
+            LogUtil.writeToLog(logMsg, LocalTime.now());
+
             audience.send(msg);
         }
 

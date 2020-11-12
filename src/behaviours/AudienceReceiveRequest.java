@@ -5,7 +5,9 @@ import jade.core.AID;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import util.LogUtil;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 
 public class AudienceReceiveRequest extends SimpleBehaviour {
@@ -26,7 +28,10 @@ public class AudienceReceiveRequest extends SimpleBehaviour {
                     HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
                     String sender = msg.getSender().getLocalName();
                     if (!audience.getCompatibility().containsKey(sender)) {
-                        System.out.println("Audience " + audience.getLocalName() + " RECEIVED request FROM agent: " + sender);
+                        String logMsg = "Audience " + audience.getLocalName() + " RECEIVED request FROM agent: " + sender;
+                        System.out.println(logMsg);
+                        LogUtil.writeToLog(logMsg, LocalTime.now());
+
                         audience.checkCompetitor(sender, map);
                     }
                 } catch (UnreadableException e) {

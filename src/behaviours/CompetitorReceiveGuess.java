@@ -4,6 +4,9 @@ import agents.Competitor;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import util.LogUtil;
+
+import java.time.LocalTime;
 
 public class CompetitorReceiveGuess extends SimpleBehaviour {
     private boolean finished = false;
@@ -22,7 +25,9 @@ public class CompetitorReceiveGuess extends SimpleBehaviour {
                 String guess = msg.getContent();
                 String sender = msg.getSender().getLocalName();
                 if (!competitor.getGuesses().containsKey(sender)) {
-                    System.out.println("Competitor " + competitor.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
+                    String logMsg = "Competitor " + competitor.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender;
+                    System.out.println(logMsg);
+                    LogUtil.writeToLog(logMsg, LocalTime.now());
                     competitor.receiveGuess(sender, Integer.parseInt(guess));
                 }
             }
