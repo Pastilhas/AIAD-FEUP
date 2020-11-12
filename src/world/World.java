@@ -8,6 +8,8 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 
+import util.LogUtil;
+import java.io.IOException;
 import java.util.*;
 
 public class World extends jade.Boot{
@@ -163,6 +165,14 @@ public class World extends jade.Boot{
 
     // int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, int tries, int rounds
     public static void main(String[] args) {
+
+        LogUtil log = null; // Create new LogUtil to generate log file
+        try {
+            log = new LogUtil();
+        } catch (IOException e) {
+            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+        }
+
         int tries = 0;
         int round = 0;
         World world;
@@ -187,6 +197,6 @@ public class World extends jade.Boot{
 
             tries++;
         }
-
+        LogUtil.close();
     }
 }
