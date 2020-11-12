@@ -29,6 +29,7 @@ public class CompetitorSendRequest extends SimpleBehaviour {
                 msg.setContentObject(competitor.getRequest());
                 msg.addReceiver(rcv);
                 competitor.logger.info("Competitor " + competitor.getLocalName() + " SENT request TO agent: " + rcv.getLocalName());
+
                 competitor.send(msg);
             } catch (IOException e) {
                 System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());

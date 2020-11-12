@@ -5,6 +5,9 @@ import jade.core.AID;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import util.LogUtil;
+
+import java.time.LocalTime;
 
 public class AudienceSendGuess extends SimpleBehaviour {
     private boolean finished = false;
