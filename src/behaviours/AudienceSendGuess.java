@@ -23,10 +23,9 @@ public class AudienceSendGuess extends SimpleBehaviour {
             AID rcv = re.getName();
             if (audience.getLocalName().equals(rcv.getLocalName())) continue;
             Integer guess = audience.getGuess(rcv.getLocalName());
-            if(guess == null) continue;
-            msg.setContent(Integer.toString(guess));
+            msg.setContent(String.valueOf(guess));
             msg.addReceiver(rcv);
-            System.out.println("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
+            audience.logger.info("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
             audience.send(msg);
         }
 

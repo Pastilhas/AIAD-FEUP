@@ -1,43 +1,35 @@
 package behaviours;
 
 import agents.Competitor;
-import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.UnreadableException;
 
-public class CompetitorReceiveGuess extends SimpleBehaviour {
-    private boolean finished = false;
-    private final Competitor competitor;
-
-    public CompetitorReceiveGuess(Competitor competitor) {
-        this.competitor = competitor;
+public class CompetitorReceiveGuess extends ReceiveMsgBehaviour {
+    public CompetitorReceiveGuess(Competitor c) {
+        super(c);
     }
 
     @Override
-    public void action() {
-        ACLMessage msg = competitor.blockingReceive();
+    protected void parseCompetitorMsg(ACLMessage msg) {}
 
-        if (msg != null) {
-            if (msg.getSender().getLocalName().startsWith("audience")) {
-                String guess = msg.getContent();
-                String sender = msg.getSender().getLocalName();
-                if (!competitor.getGuesses().containsKey(sender)) {
-                    System.out.println("Competitor " + competitor.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
-                    competitor.receiveGuess(sender, Integer.parseInt(guess));
-                }
-            }
-        } else {
-            block();
-        }
+    @Override
+    protected void parseAudienceMsg(ACLMessage msg) {
+        String sender = msg.getSender().getLocalName();
+        if(person.getGuesses().containsKey(sender)) return;
 
-        if (competitor.getGuesses().size() == competitor.getAudience().length) {
-            competitor.finalGuess();
-            finished = true;
-        }
+        Competitor p = (Competitor) person;
+        String guess = msg.getContent();
+        p.logger.info("Competitor " + p.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
+        if(guess.equals("null")) p.receiveGuess(sender, null);
+        else p.receiveGuess(sender, Integer.valueOf(guess));
     }
 
     @Override
-    public boolean done() {
-        return finished;
+    protected boolean finishCondition() {
+        return person.getGuesses().size() == person.getAudience().length;
+    }
+
+    @Override
+    protected void finish() {
+        person.finalGuess();
     }
 }

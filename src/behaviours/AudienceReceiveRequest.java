@@ -1,49 +1,42 @@
 package behaviours;
 
 import agents.Audience;
-import jade.core.AID;
-import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
 import java.util.HashMap;
 
-public class AudienceReceiveRequest extends SimpleBehaviour {
-    private boolean finished = false;
-    private final Audience audience;
-
-    public AudienceReceiveRequest(Audience audience) {
-        this.audience = audience;
+public class AudienceReceiveRequest extends ReceiveMsgBehaviour {
+    public AudienceReceiveRequest(Audience a) {
+        super(a);
     }
 
     @Override
-    public void action() {
-        ACLMessage msg = audience.blockingReceive();
+    protected void parseCompetitorMsg(ACLMessage msg) {
+        String sender = msg.getSender().getLocalName();
+        Audience p = (Audience) person;
+        if (p.getCompatibility().containsKey(sender)) return;
 
-        if (msg != null) {
-            if (msg.getSender().getLocalName().startsWith("competitor")) {
-                try {
-                    HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
-                    String sender = msg.getSender().getLocalName();
-                    if (!audience.getCompatibility().containsKey(sender)) {
-                        System.out.println("Audience " + audience.getLocalName() + " RECEIVED request FROM agent: " + sender);
-                        audience.checkCompetitor(sender, map);
-                    }
-                } catch (UnreadableException e) {
-                    System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
-                }
-            }
-        } else {
-            block();
-        }
-
-        if (audience.getCompatibility().size() == audience.getCompetitor().length) {
-            finished = true;
+        try {
+            HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
+            p.logger.info("Audience " + p.getLocalName() + " RECEIVED request FROM agent: " + sender);
+            p.checkCompetitor(sender, map);
+        } catch (UnreadableException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public boolean done() {
-        return finished;
+    protected void parseAudienceMsg(ACLMessage msg) {
+    }
+
+    @Override
+    protected boolean finishCondition() {
+        Audience p = (Audience) person;
+        return p.getCompatibility().size() == p.getCompetitor().length;
+    }
+
+    @Override
+    protected void finish() {
     }
 }

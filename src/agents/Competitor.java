@@ -60,10 +60,13 @@ public class Competitor extends Person {
     public Integer getGuess() { return guess; }
 
     public void finalGuess() {
+        while(guesses.values().remove(null));
+
         float maxConfidence = 0.0f;
         float currentGuess = 0.0f;
 
         for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
+            if(entry.getValue() == null) continue;
             currentGuess += entry.getValue() * confidence.get(entry.getKey());
             maxConfidence += confidence.get(entry.getKey());
         }

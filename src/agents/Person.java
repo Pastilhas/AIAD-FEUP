@@ -6,12 +6,17 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public abstract class Person extends Agent {
+    public final Logger logger;
     final String id;
     final HashMap<String, Integer> teamAffinity;
     final HashMap<String, Integer> guesses;
@@ -24,6 +29,20 @@ public abstract class Person extends Agent {
         guesses = new HashMap<>();
         confidence = new HashMap<>();
         guess = null;
+        logger = Logger.getLogger(id);
+        setupLogger();
+    }
+
+    private void setupLogger() {
+        try {
+            FileHandler handler = new FileHandler("logs/" + id + ".log");
+            SimpleFormatter formatter = new SimpleFormatter();
+            handler.setFormatter(formatter);
+            logger.addHandler(handler);
+            logger.setUseParentHandlers(false);
+        } catch (Exception e) {
+            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+        }
     }
 
     public abstract void behaviours();
@@ -55,7 +74,7 @@ public abstract class Person extends Agent {
             dfd.addServices(sd);
             res = DFService.search(this, dfd);
         } catch (FIPAException e) {
-            e.printStackTrace();
+            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
         }
 
         return res;
@@ -76,14 +95,20 @@ public abstract class Person extends Agent {
     }
 
     private void updateConfidence(int price) {
+        while(guesses.values().remove(null));
+        if(guesses.isEmpty()) return;
+
         Integer min = Collections.min(guesses.values());
         Integer max = Collections.max(guesses.values());
         int maxDiff = Math.max(Math.abs(price - min), Math.abs(price - max));
 
         for (Map.Entry<String, Float> entry : confidence.entrySet()) {
+            if(guesses.get(entry.getKey()) == null) continue;
             int diff = Math.abs(guesses.get(entry.getKey()) - price);
             confidence.replace(entry.getKey(), entry.getValue() * (1.5f - diff / maxDiff));
         }
 
     }
+
+    public abstract void finalGuess();
 }
