@@ -40,6 +40,13 @@ public class Audience extends Person {
         addBehaviour(sb);
     }
 
+    @Override
+    public void endRound(int price) {
+        super.endRound(price);
+        compatibility.clear();
+        ready = false;
+    }
+
     public void startRound(String item) {
         initialGuess(item);
         ready = false;

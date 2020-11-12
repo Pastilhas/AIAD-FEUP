@@ -25,8 +25,10 @@ public class AudienceReceiveRequest extends SimpleBehaviour {
                 try {
                     HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
                     String sender = msg.getSender().getLocalName();
-                    System.out.println("Audience " + audience.getLocalName() + " RECEIVED request FROM agent: " + sender);
-                    audience.checkCompetitor(sender, map);
+                    if (!audience.getCompatibility().containsKey(sender)) {
+                        System.out.println("Audience " + audience.getLocalName() + " RECEIVED request FROM agent: " + sender);
+                        audience.checkCompetitor(sender, map);
+                    }
                 } catch (UnreadableException e) {
                     System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
                 }

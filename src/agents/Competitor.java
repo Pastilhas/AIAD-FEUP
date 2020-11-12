@@ -33,6 +33,12 @@ public class Competitor extends Person {
         behaviours();
     }
 
+    @Override
+    public void endRound(int price) {
+        super.endRound(price);
+        ready = false;
+    }
+
     public void setup() {
         // Register agent in yellow pages
         try {

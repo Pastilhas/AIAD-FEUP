@@ -21,7 +21,6 @@ public class CompetitorSendRequest extends SimpleBehaviour {
     @Override
     public void action() {
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        System.out.println("hello");
 
         DFAgentDescription[] res = competitor.getAudience();
         for (DFAgentDescription re : res) {

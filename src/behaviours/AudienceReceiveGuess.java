@@ -21,15 +21,16 @@ public class AudienceReceiveGuess extends SimpleBehaviour {
             if (msg.getSender().getLocalName().startsWith("audience")) {
                 String guess = msg.getContent();
                 String sender = msg.getSender().getLocalName();
-                if (!audience.getGuesses().containsKey(sender))
+                if (!audience.getGuesses().containsKey(sender)) {
                     System.out.println("Audience " + audience.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
-                audience.receiveGuess(sender, Integer.parseInt(guess));
+                    audience.receiveGuess(sender, Integer.parseInt(guess));
+                }
             }
         } else {
             block();
         }
 
-        if (audience.getGuesses().size() == audience.getAudience().length) {
+        if (audience.getGuesses().size() == audience.getAudience().length - 1) {
             audience.finalGuess();
             finished = true;
         }

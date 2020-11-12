@@ -21,9 +21,10 @@ public class CompetitorReceiveGuess extends SimpleBehaviour {
             if (msg.getSender().getLocalName().startsWith("audience")) {
                 String guess = msg.getContent();
                 String sender = msg.getSender().getLocalName();
-                if (!competitor.getGuesses().containsKey(sender))
+                if (!competitor.getGuesses().containsKey(sender)) {
                     System.out.println("Competitor " + competitor.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
-                competitor.receiveGuess(sender, Integer.parseInt(guess));
+                    competitor.receiveGuess(sender, Integer.parseInt(guess));
+                }
             }
         } else {
             block();
