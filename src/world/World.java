@@ -175,6 +175,9 @@ public class World extends jade.Boot{
                 round++;
             }
 
+            // Possible fix for the problem
+            round = 0;
+
             try {
                 world.cc.kill();
                 world.rt.shutDown();
