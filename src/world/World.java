@@ -27,7 +27,6 @@ public class World extends jade.Boot {
     private final int maxCompetitors;
     private final int maxItems;
     private final Runtime rt;
-    private final Profile p;
     private final ContainerController cc;
     private final float selfConfidenceRate;
     private final long time;
@@ -46,7 +45,7 @@ public class World extends jade.Boot {
         teams = new ArrayList<>();
 
         rt = Runtime.instance();
-        p = new ProfileImpl("localhost", 9090, null, true);
+        Profile p = new ProfileImpl("localhost", 9090, null, true);
         cc = rt.createMainContainer(p);
 
         // Generate items and people
@@ -186,6 +185,9 @@ public class World extends jade.Boot {
                 System.exit(2);
             }
         }
+
+        for(Competitor c : competitors) c.startConfidence();
+        for(Audience a : audience) a.startConfidence();
     }
 
     private void playRound() {

@@ -50,19 +50,12 @@ public abstract class Person extends Agent {
         }
     }
 
-    protected void startConfidence() {
+    public void startConfidence() {
         Random rnd = new Random();
         DFAgentDescription[] aud = getAudience();
-        DFAgentDescription[] com = getCompetitor();
 
         for (DFAgentDescription a : aud) {
             String id = a.getName().getLocalName();
-            if (id.equals(getLocalName())) continue;
-            confidence.put(id, rnd.nextFloat() + 0.2f);
-        }
-
-        for (DFAgentDescription c : com) {
-            String id = c.getName().getLocalName();
             if (id.equals(getLocalName())) continue;
             confidence.put(id, rnd.nextFloat() + 0.2f);
         }
@@ -113,7 +106,6 @@ public abstract class Person extends Agent {
     }
 
     public void startRound() {
-        startConfidence();
         behaviours();
     }
 

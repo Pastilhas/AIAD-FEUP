@@ -28,7 +28,6 @@ public abstract class SendMsgBehaviour extends SimpleBehaviour {
                 if (person.getLocalName().equals(rcv.getLocalName())) continue;
                 msg.setContentObject(chooseContentObject(rcv));
                 msg.addReceiver(rcv);
-                person.logger.info("Competitor " + person.getLocalName() + " SENT request TO agent: " + rcv.getLocalName());
                 person.send(msg);
             } catch (IOException e) {
                 e.printStackTrace();

@@ -14,6 +14,7 @@ public class AudienceShareGuess extends SendMsgBehaviour {
     @Override
     protected Serializable chooseContentObject(AID rcv) {
         Audience p = (Audience) person;
+        person.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO %10s", person.getLocalName(), p.getGuess(null), rcv.getLocalName()));
         return p.getGuess(null);
     }
 
