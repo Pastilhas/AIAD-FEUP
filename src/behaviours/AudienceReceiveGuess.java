@@ -2,6 +2,7 @@ package behaviours;
 
 import agents.Audience;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.UnreadableException;
 
 public class AudienceReceiveGuess extends ReceiveMsgBehaviour {
     public AudienceReceiveGuess(Audience a) {
@@ -17,13 +18,13 @@ public class AudienceReceiveGuess extends ReceiveMsgBehaviour {
         String sender = msg.getSender().getLocalName();
         if (person.getGuesses().containsKey(sender)) return;
 
-        Audience p = (Audience) person;
-        String guess = msg.getContent();
-        p.logger.info("Audience " + p.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
-        if (guess.equals("null")) p.receiveGuess(sender, null);
-        else p.receiveGuess(sender, Integer.valueOf(guess));
-
-
+        try {
+            Integer guess = (Integer) msg.getContentObject();
+            person.logger.info("Audience " + person.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
+            person.receiveGuess(sender, guess);
+        } catch (UnreadableException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

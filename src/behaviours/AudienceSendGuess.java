@@ -2,38 +2,23 @@ package behaviours;
 
 import agents.Audience;
 import jade.core.AID;
-import jade.core.behaviours.SimpleBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.lang.acl.ACLMessage;
 
-public class AudienceSendGuess extends SimpleBehaviour {
-    private boolean finished = false;
-    private final Audience audience;
+import java.io.Serializable;
 
-    public AudienceSendGuess(Audience audience) {
-        this.audience = audience;
+public class AudienceSendGuess extends SendMsgBehaviour {
+    public AudienceSendGuess(Audience a) {
+        super(a);
     }
 
     @Override
-    public void action() {
-        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-
-        DFAgentDescription[] res = audience.getCompetitor();
-        for (DFAgentDescription re : res) {
-            AID rcv = re.getName();
-            if (audience.getLocalName().equals(rcv.getLocalName())) continue;
-            Integer guess = audience.getGuess(rcv.getLocalName());
-            msg.setContent(String.valueOf(guess));
-            msg.addReceiver(rcv);
-            audience.logger.info("Audience " + audience.getLocalName() + " SENT guess: " + guess + " TO agent: " + rcv.getLocalName());
-            audience.send(msg);
-        }
-
-        finished = true;
+    protected Serializable chooseContentObject(AID rcv) {
+        Audience p = (Audience) person;
+        return p.getGuess(rcv.getLocalName());
     }
 
     @Override
-    public boolean done() {
-        return finished;
+    protected DFAgentDescription[] chooseReceivers() {
+        return person.getCompetitor();
     }
 }

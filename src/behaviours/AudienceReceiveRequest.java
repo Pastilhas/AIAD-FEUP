@@ -18,7 +18,7 @@ public class AudienceReceiveRequest extends ReceiveMsgBehaviour {
 
         try {
             HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
-            p.logger.info("Audience " + p.getLocalName() + " RECEIVED request FROM agent: " + sender);
+            person.logger.info("Audience " + person.getLocalName() + " RECEIVED request FROM agent: " + sender);
             p.checkCompetitor(sender, map);
         } catch (UnreadableException e) {
             e.printStackTrace();
