@@ -18,8 +18,8 @@ public class Audience extends Person {
     private final HashMap<String, Integer> compatibility;
     private final float selfconfidence;
 
-    public Audience(String id, float selfconfidence) {
-        super(id);
+    public Audience(String id, float selfconfidence, long time) {
+        super(id, time);
         this.selfconfidence = selfconfidence;
         itemPrice = new HashMap<>();
         compatibility = new HashMap<>();
@@ -27,17 +27,7 @@ public class Audience extends Person {
 
     @Override
     protected void setup() {
-        try {
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType("audience");
-            sd.setName(getLocalName());
-            dfd.setName(getAID());
-            dfd.addServices(sd);
-            DFService.register(this, dfd);
-        } catch (FIPAException e) {
-            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
-        }
-
+        setupAgent("audience");
     }
 
     @Override

@@ -30,13 +30,15 @@ public class World extends jade.Boot {
     private final Profile p;
     private final ContainerController cc;
     private final float selfConfidenceRate;
+    private final long time;
 
-    World(int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate) {
+    World(int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, long time) {
         // Set variables
         this.maxAudience = maxAudience;
         this.maxCompetitors = maxCompetitors;
         this.maxItems = maxItems;
         this.selfConfidenceRate = selfConfidenceRate;
+        this.time = time;
 
         audience = new ArrayList<>();
         competitors = new ArrayList<>();
@@ -53,33 +55,58 @@ public class World extends jade.Boot {
         generatePersons();
     }
 
-    // int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, int tries, int rounds
-    public static void main(String[] args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
-
+    private static void setupLogger(String path) {
         try {
-            File directory = new File("logs/");
-            if (!directory.exists()) directory.mkdir();
-
-            FileHandler handler = new FileHandler("logs/world.log");
+            FileHandler handler = new FileHandler(path);
             SimpleFormatter formatter = new SimpleFormatter();
             handler.setFormatter(formatter);
             LOGGER.addHandler(handler);
             LOGGER.setUseParentHandlers(false);
         } catch (IOException e) {
-            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+            LOGGER.severe("Exception thrown while setting up world logger.");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private static long setupLogs() {
+        long time = System.currentTimeMillis();
+
+        File directory = new File("logs/" + time);
+        if (!directory.exists()) {
+            directory.getParentFile().mkdirs();
+            directory.mkdir();
         }
 
+        setupLogger("logs/" + time + "/" + "world.log");
+        return time;
+    }
+
+    // int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, int tries, int rounds
+    public static void main(String[] args) {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+
+        int nAudience = Integer.parseInt(args[0]);
+        int nCompetitors = Integer.parseInt(args[1]);
+        int nItems = Integer.parseInt(args[2]);
+        float highConfidenceRate = Float.parseFloat(args[3]);
+        int nTries = Integer.parseInt(args[4]);
+        int nRounds = Integer.parseInt(args[5]);
+
         int tries = 0;
+        int round;
         World world;
 
-        while (tries < Integer.parseInt(args[4])) {
-            int round = 0;
-            world = new World(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Float.parseFloat(args[3]));
+        while (tries < nTries) {
+            round = 0;
+            long time = setupLogs();
+            world = new World(nAudience, nCompetitors, nItems, highConfidenceRate, time);
             LOGGER.info("World created");
 
-            while (round < Integer.parseInt(args[5])) {
+            while (round < nRounds) {
+                LOGGER.info("Start round " + round);
                 world.playRound();
+                LOGGER.info("End round " + round);
                 round++;
             }
 
@@ -87,11 +114,15 @@ public class World extends jade.Boot {
                 world.cc.kill();
                 world.rt.shutDown();
             } catch (Exception e) {
-                System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+                LOGGER.severe("Exception thrown while shutting down.");
+                e.printStackTrace();
+                System.exit(1);
             }
 
             tries++;
         }
+
+        System.exit(0);
     }
 
     private void generateItems() {
@@ -108,9 +139,9 @@ public class World extends jade.Boot {
                 Random rnd = new Random();
                 Audience p;
                 if (rnd.nextFloat() < selfConfidenceRate) {
-                    p = new Audience(id, rnd.nextFloat());
+                    p = new Audience(id, rnd.nextFloat(), time);
                 } else {
-                    p = new Audience(id, 1000);
+                    p = new Audience(id, 1000, time);
                 }
 
 
@@ -129,7 +160,9 @@ public class World extends jade.Boot {
                 AgentController ac = this.cc.acceptNewAgent(id, p);
                 ac.start();
             } catch (Exception e) {
-                System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+                LOGGER.severe("Exception thrown while creating audience_" + i + ".");
+                e.printStackTrace();
+                System.exit(2);
             }
         }
 
@@ -137,7 +170,7 @@ public class World extends jade.Boot {
             try {
                 String id = "competitor_" + i;
                 Random rnd = new Random();
-                Competitor p = new Competitor(id);
+                Competitor p = new Competitor(id, time);
 
                 for (String t : teams) {
                     int ta = rnd.nextInt(101);
@@ -148,7 +181,9 @@ public class World extends jade.Boot {
                 AgentController ac = this.cc.acceptNewAgent(id, p);
                 ac.start();
             } catch (Exception e) {
-                System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+                LOGGER.severe("Exception thrown while creating competitor_" + i + ".");
+                e.printStackTrace();
+                System.exit(2);
             }
         }
     }

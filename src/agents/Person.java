@@ -15,6 +15,7 @@ public abstract class Person extends Agent {
     public final Logger logger;
 
     final String id;
+    final long time;
     final HashMap<String, Integer> teamAffinity;
     final HashMap<String, Integer> guesses;
     final HashMap<String, Float> confidence;
@@ -22,8 +23,9 @@ public abstract class Person extends Agent {
     public boolean ready;
     Integer guess;
 
-    Person(String id) {
+    Person(String id, long time) {
         this.id = id;
+        this.time = time;
         teamAffinity = new HashMap<>();
         guesses = new HashMap<>();
         confidence = new HashMap<>();
@@ -36,13 +38,15 @@ public abstract class Person extends Agent {
 
     private void setupLogger() {
         try {
-            FileHandler handler = new FileHandler("logs/" + id + ".log");
+            FileHandler handler = new FileHandler("logs/" + time + "/" + id + ".log");
             SimpleFormatter formatter = new SimpleFormatter();
             handler.setFormatter(formatter);
             logger.addHandler(handler);
             logger.setUseParentHandlers(false);
         } catch (Exception e) {
-            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+            System.err.println("Exception thrown while setting up " + id + " logger.");
+            e.printStackTrace();
+            System.exit(3);
         }
     }
 
@@ -97,7 +101,9 @@ public abstract class Person extends Agent {
             dfd.addServices(sd);
             res = DFService.search(this, dfd);
         } catch (FIPAException e) {
-            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+            logger.severe("Exception thrown while getting service " + type + ".");
+            e.printStackTrace();
+            System.exit(3);
         }
         return res;
     }
@@ -152,5 +158,20 @@ public abstract class Person extends Agent {
         a[1] = maxConfidence;
 
         return a;
+    }
+
+    protected void setupAgent(String type) {
+        try {
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType(type);
+            sd.setName(getLocalName());
+            dfd.setName(getAID());
+            dfd.addServices(sd);
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+            logger.severe("Exception thrown while setting up " + id + ".");
+            e.printStackTrace();
+            System.exit(3);
+        }
     }
 }

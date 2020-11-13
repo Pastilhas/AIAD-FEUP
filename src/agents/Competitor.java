@@ -8,22 +8,13 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
 public class Competitor extends Person {
-    public Competitor(String id) {
-        super(id);
+    public Competitor(String id, long time) {
+        super(id, time);
     }
 
     @Override
     protected void setup() {
-        try {
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType("competitor");
-            sd.setName(getLocalName());
-            dfd.setName(getAID());
-            dfd.addServices(sd);
-            DFService.register(this, dfd);
-        } catch (FIPAException e) {
-            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
-        }
+        setupAgent("competitor");
     }
 
     @Override
