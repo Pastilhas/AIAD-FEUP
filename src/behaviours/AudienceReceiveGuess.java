@@ -20,7 +20,7 @@ public class AudienceReceiveGuess extends ReceiveMsgBehaviour {
 
         try {
             Integer guess = (Integer) msg.getContentObject();
-            person.logger.info("Audience " + person.getLocalName() + " RECEIVED guess: " + guess + " FROM agent: " + sender);
+            person.logger.info(String.format("AUDIENCE   %10s RECEIVED GUESS %7d FROM %10s", person.getLocalName(), guess, sender));
             person.receiveGuess(sender, guess);
         } catch (UnreadableException e) {
             e.printStackTrace();

@@ -5,9 +5,6 @@ import behaviours.AudienceReceiveRequest;
 import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
 import jade.core.behaviours.SequentialBehaviour;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
 
 import java.util.HashMap;
 import java.util.Map;

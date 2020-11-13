@@ -14,6 +14,7 @@ public class CompetitorSendRequest extends SendMsgBehaviour {
     @Override
     protected Serializable chooseContentObject(AID rcv) {
         Competitor p = (Competitor) person;
+        person.logger.info(String.format("COMPETITOR %10s SENT REQUEST           TO %10s", person.getLocalName(), rcv.getLocalName()));
         return p.getTeam();
     }
 

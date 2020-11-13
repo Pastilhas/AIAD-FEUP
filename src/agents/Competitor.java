@@ -3,9 +3,6 @@ package agents;
 import behaviours.CompetitorReceiveGuess;
 import behaviours.CompetitorSendRequest;
 import jade.core.behaviours.SequentialBehaviour;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
 
 public class Competitor extends Person {
     public Competitor(String id, long time) {
