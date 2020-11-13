@@ -6,7 +6,6 @@ import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
@@ -15,46 +14,19 @@ import java.util.Map;
 import java.util.Random;
 
 public class Audience extends Person {
-    private final float selfconfidence;
     private final HashMap<String, Integer> itemPrice;
-    private final DFAgentDescription dfd;
     private final HashMap<String, Integer> compatibility;
-    public boolean ready;
+    private final float selfconfidence;
 
     public Audience(String id, float selfconfidence) {
         super(id);
         this.selfconfidence = selfconfidence;
         itemPrice = new HashMap<>();
-        dfd = new DFAgentDescription();
         compatibility = new HashMap<>();
     }
 
     @Override
-    public void behaviours() {
-        // Setup behaviours
-        SequentialBehaviour sb = new SequentialBehaviour();
-        sb.addSubBehaviour(new AudienceShareGuess(this));
-        sb.addSubBehaviour(new AudienceReceiveGuess(this));
-        sb.addSubBehaviour(new AudienceReceiveRequest(this));
-        sb.addSubBehaviour(new AudienceSendGuess(this));
-        addBehaviour(sb);
-    }
-
-    @Override
-    public void endRound(int price) {
-        super.endRound(price);
-        compatibility.clear();
-        ready = false;
-    }
-
-    public void startRound(String item) {
-        initialGuess(item);
-        ready = false;
-        behaviours();
-    }
-
-    public void setup() {
-        // Register agent in yellow pages
+    protected void setup() {
         try {
             ServiceDescription sd = new ServiceDescription();
             sd.setType("audience");
@@ -65,32 +37,46 @@ public class Audience extends Person {
         } catch (FIPAException e) {
             System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
         }
+
     }
 
-    public void addItem(int id, Integer price) {
-        if (price != null)
-            itemPrice.put(Integer.toString(id), price);
+    @Override
+    void behaviours() {
+        SequentialBehaviour sb = new SequentialBehaviour();
+        sb.addSubBehaviour(new AudienceShareGuess(this));
+        sb.addSubBehaviour(new AudienceReceiveGuess(this));
+        sb.addSubBehaviour(new AudienceReceiveRequest(this));
+        sb.addSubBehaviour(new AudienceSendGuess(this));
+        addBehaviour(sb);
     }
 
-    public Integer getGuess(String rcv) {
-        // Share with rest of audience
-        if (rcv == null || compatibility.get(rcv) > 50) {
-            return guess;
-        } else {
-            return null;
-        }
+    @Override
+    public void finalGuess() {
+        float[] a = finalGuessCalc();
+        float currentGuess = a[0];
+        float maxConfidence = a[1];
+
+        currentGuess += guess * selfconfidence;
+        maxConfidence += selfconfidence;
+
+        guess = Math.round(currentGuess / maxConfidence);
+        ready = true;
     }
 
-    public HashMap<String, Integer> getCompatibility() {
-        return compatibility;
+    public Integer getGuess(String id) {
+        if (id == null || compatibility.get(id) > 50) return getGuess();
+        else return null;
     }
 
-    public void checkCompetitor(String competitor, HashMap<String, Integer> map) {
-        int comp = 0;
-        for (Map.Entry<String, Integer> entry : teamAffinity.entrySet()) {
-            comp += Math.abs(entry.getValue() - map.get(entry.getKey()));
-        }
-        compatibility.put(competitor, comp);
+    public void startRound(String id) {
+        initialGuess(id);
+        super.startRound();
+    }
+
+    @Override
+    public void endRound(int price) {
+        super.endRound(price);
+        compatibility.clear();
     }
 
     public void initialGuess(String item) {
@@ -102,20 +88,19 @@ public class Audience extends Person {
         }
     }
 
-    public void finalGuess() {
-        float maxConfidence = 0.0f;
-        float currentGuess = 0.0f;
+    public void addItem(String id, Integer value) {
+        if (value != null) itemPrice.put(id, value);
+    }
 
-        for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
-            if(entry.getValue() == null) continue;
-            currentGuess += entry.getValue() * confidence.get(entry.getKey());
-            maxConfidence += confidence.get(entry.getKey());
+    public HashMap<String, Integer> getCompatibility() {
+        return compatibility;
+    }
+
+    public void checkCompetitor(String id, HashMap<String, Integer> map) {
+        int comp = 0;
+        for (Map.Entry<String, Integer> entry : teamAffinity.entrySet()) {
+            comp += Math.abs(entry.getValue() - map.get(entry.getKey()));
         }
-
-        currentGuess += guess * selfconfidence;
-        maxConfidence += selfconfidence;
-
-        guess = Math.round(currentGuess / maxConfidence);
-        ready = true;
+        compatibility.put(id, comp);
     }
 }

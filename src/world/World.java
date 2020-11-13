@@ -53,6 +53,47 @@ public class World extends jade.Boot {
         generatePersons();
     }
 
+    // int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, int tries, int rounds
+    public static void main(String[] args) {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+
+        try {
+            File directory = new File("logs/");
+            if (!directory.exists()) directory.mkdir();
+
+            FileHandler handler = new FileHandler("logs/world.log");
+            SimpleFormatter formatter = new SimpleFormatter();
+            handler.setFormatter(formatter);
+            LOGGER.addHandler(handler);
+            LOGGER.setUseParentHandlers(false);
+        } catch (IOException e) {
+            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+        }
+
+        int tries = 0;
+        World world;
+
+        while (tries < Integer.parseInt(args[4])) {
+            int round = 0;
+            world = new World(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Float.parseFloat(args[3]));
+            LOGGER.info("World created");
+
+            while (round < Integer.parseInt(args[5])) {
+                world.playRound();
+                round++;
+            }
+
+            try {
+                world.cc.kill();
+                world.rt.shutDown();
+            } catch (Exception e) {
+                System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
+            }
+
+            tries++;
+        }
+    }
+
     private void generateItems() {
         for (int i = 0; i < maxItems; i++) {
             Random rnd = new Random();
@@ -76,7 +117,7 @@ public class World extends jade.Boot {
                 int max = rnd.nextInt(maxItems / 2);
                 for (int j = 0; j < max; j++) {
                     int id_item = rnd.nextInt(maxItems);
-                    p.addItem(id_item, itemPrice.get(String.valueOf(id_item)));
+                    p.addItem(String.valueOf(id_item), itemPrice.get(String.valueOf(id_item)));
                 }
 
                 for (String t : teams) {
@@ -154,7 +195,6 @@ public class World extends jade.Boot {
         LOGGER.info("Competitors finished guessing.");
 
         // 5. Declare winner
-        System.out.println(guesses.values());
         String winner = "FAILED";
         int guess = Integer.MIN_VALUE;
         for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
@@ -172,47 +212,6 @@ public class World extends jade.Boot {
         }
         for (Competitor cm : competitors) {
             cm.endRound(itemPrice.get(item_id));
-        }
-    }
-
-    // int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, int tries, int rounds
-    public static void main(String[] args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
-
-        try {
-            File directory = new File("logs/");
-            if (!directory.exists()) directory.mkdir();
-
-            FileHandler handler = new FileHandler("logs/world.log");
-            SimpleFormatter formatter = new SimpleFormatter();
-            handler.setFormatter(formatter);
-            LOGGER.addHandler(handler);
-            LOGGER.setUseParentHandlers(false);
-        } catch (IOException e) {
-            System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
-        }
-
-        int tries = 0;
-        World world;
-
-        while (tries < Integer.parseInt(args[4])) {
-            int round = 0;
-            world = new World(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Float.parseFloat(args[3]));
-            System.out.println("World created");
-
-            while (round < Integer.parseInt(args[5])) {
-                world.playRound();
-                round++;
-            }
-
-            try {
-                world.cc.kill();
-                world.rt.shutDown();
-            } catch (Exception e) {
-                System.out.println("!!Exception:" + e.getMessage() + "\n!!" + e.getCause());
-            }
-
-            tries++;
         }
     }
 }

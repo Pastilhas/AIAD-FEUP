@@ -1,46 +1,19 @@
 package agents;
 
-import behaviours.*;
+import behaviours.CompetitorReceiveGuess;
+import behaviours.CompetitorSendRequest;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Competitor extends Person {
-    private final DFAgentDescription dfd;
-    public boolean ready;
-
     public Competitor(String id) {
         super(id);
-        dfd = new DFAgentDescription();
     }
 
     @Override
-    public void behaviours() {
-        // Setup behaviours
-        SequentialBehaviour sb = new SequentialBehaviour();
-        sb.addSubBehaviour(new CompetitorSendRequest(this));
-        sb.addSubBehaviour(new CompetitorReceiveGuess(this));
-        addBehaviour(sb);
-    }
-
-    public void startRound() {
-        ready = false;
-        behaviours();
-    }
-
-    @Override
-    public void endRound(int price) {
-        super.endRound(price);
-        ready = false;
-    }
-
-    public void setup() {
-        // Register agent in yellow pages
+    protected void setup() {
         try {
             ServiceDescription sd = new ServiceDescription();
             sd.setType("competitor");
@@ -53,23 +26,19 @@ public class Competitor extends Person {
         }
     }
 
-    public HashMap<String, Integer> getRequest() {
-        return teamAffinity;
+    @Override
+    void behaviours() {
+        SequentialBehaviour sb = new SequentialBehaviour();
+        sb.addSubBehaviour(new CompetitorSendRequest(this));
+        sb.addSubBehaviour(new CompetitorReceiveGuess(this));
+        addBehaviour(sb);
     }
 
-    public Integer getGuess() { return guess; }
-
+    @Override
     public void finalGuess() {
-        while(guesses.values().remove(null));
-
-        float maxConfidence = 0.0f;
-        float currentGuess = 0.0f;
-
-        for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
-            if(entry.getValue() == null) continue;
-            currentGuess += entry.getValue() * confidence.get(entry.getKey());
-            maxConfidence += confidence.get(entry.getKey());
-        }
+        float[] a = finalGuessCalc();
+        float currentGuess = a[0];
+        float maxConfidence = a[1];
 
         guess = Math.round(currentGuess / maxConfidence);
         ready = true;

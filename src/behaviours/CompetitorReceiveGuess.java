@@ -10,12 +10,13 @@ public class CompetitorReceiveGuess extends ReceiveMsgBehaviour {
     }
 
     @Override
-    protected void parseCompetitorMsg(ACLMessage msg) {}
+    protected void parseCompetitorMsg(ACLMessage msg) {
+    }
 
     @Override
     protected void parseAudienceMsg(ACLMessage msg) {
         String sender = msg.getSender().getLocalName();
-        if(person.getGuesses().containsKey(sender)) return;
+        if (person.getGuesses().containsKey(sender)) return;
 
         try {
             Integer guess = (Integer) msg.getContentObject();

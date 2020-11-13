@@ -40,6 +40,7 @@ public abstract class SendMsgBehaviour extends SimpleBehaviour {
     }
 
     protected abstract Serializable chooseContentObject(AID rcv);
+
     protected abstract DFAgentDescription[] chooseReceivers();
 
     @Override
