@@ -3,8 +3,9 @@ package behaviours;
 import agents.Audience;
 import jade.core.AID;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.lang.acl.ACLMessage;
 
-import java.io.Serializable;
+import java.io.IOException;
 
 public class AudienceShareGuess extends SendMsgBehaviour {
     public AudienceShareGuess(Audience a) {
@@ -12,10 +13,14 @@ public class AudienceShareGuess extends SendMsgBehaviour {
     }
 
     @Override
-    protected Serializable chooseContentObject(AID rcv) {
+    protected ACLMessage getMessage(AID rcv) throws IOException {
         Audience p = (Audience) person;
-        person.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO %10s", person.getLocalName(), p.getGuess(null), rcv.getLocalName()));
-        return p.getGuess(null);
+        int performative = ACLMessage.INFORM;
+        ACLMessage msg = new ACLMessage(performative);
+        msg.setContentObject(p.getGuess(null));
+        msg.addReceiver(rcv);
+        person.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO   %10s", person.getLocalName(), p.getGuess(null), rcv.getLocalName()));
+        return msg;
     }
 
     @Override

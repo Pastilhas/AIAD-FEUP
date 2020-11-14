@@ -62,7 +62,7 @@ public class World extends jade.Boot {
             LOGGER.addHandler(handler);
             LOGGER.setUseParentHandlers(false);
         } catch (IOException e) {
-            LOGGER.severe("Exception thrown while setting up world logger.");
+            System.err.println("Exception thrown while setting up world logger.");
             e.printStackTrace();
             System.exit(1);
         }
