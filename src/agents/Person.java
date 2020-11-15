@@ -57,7 +57,7 @@ public abstract class Person extends Agent {
         for (DFAgentDescription a : aud) {
             String id = a.getName().getLocalName();
             if (id.equals(getLocalName())) continue;
-            confidence.put(id, rnd.nextFloat() + 0.2f);
+            confidence.putIfAbsent(id, rnd.nextFloat() + 0.2f);
         }
     }
 
@@ -140,8 +140,10 @@ public abstract class Person extends Agent {
 
         float maxConfidence = 0.0f;
         float currentGuess = 0.0f;
+        Random rnd = new Random();
 
         for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
+            confidence.putIfAbsent(entry.getKey(), rnd.nextFloat() + 0.2f);
             currentGuess += entry.getValue() * confidence.get(entry.getKey());
             maxConfidence += confidence.get(entry.getKey());
         }

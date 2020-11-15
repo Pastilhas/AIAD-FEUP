@@ -51,7 +51,7 @@ public class Audience extends Person {
     }
 
     public Integer getGuess(String id) {
-        if (id == null || compatibility.get(id) > 50) return getGuess();
+        if (id == null || compatibility.get(id) > 80) return getGuess();
         else return null;
     }
 
@@ -69,7 +69,8 @@ public class Audience extends Person {
     public void initialGuess(String item) {
         Random rnd = new Random();
         if (itemPrice.get(item) != null) {
-            guess = itemPrice.get(item) + rnd.nextInt((int) (itemPrice.get(item) * 0.2f)) - (int) (itemPrice.get(item) * 0.1f);
+            int p = itemPrice.get(item);
+            guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
         } else {
             guess = rnd.nextInt(15001);
         }

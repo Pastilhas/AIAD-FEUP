@@ -9,6 +9,7 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.FileHandler;
@@ -22,6 +23,7 @@ public class World extends jade.Boot {
     private final ArrayList<Audience> audience;
     private final ArrayList<Competitor> competitors;
     private final HashMap<String, Integer> itemPrice;
+    private final HashMap<String, Integer> winners;
     private final ArrayList<String> teams;
     private final int maxAudience;
     private final int maxCompetitors;
@@ -31,17 +33,18 @@ public class World extends jade.Boot {
     private final float selfConfidenceRate;
     private final long time;
 
-    World(int maxAudience, int maxCompetitors, int maxItems, float selfConfidenceRate, long time) {
+    World(int nAudience, int nCompetitors, int nItems, float highConfidenceRate, long time) {
         // Set variables
-        this.maxAudience = maxAudience;
-        this.maxCompetitors = maxCompetitors;
-        this.maxItems = maxItems;
-        this.selfConfidenceRate = selfConfidenceRate;
+        this.maxAudience = nAudience;
+        this.maxCompetitors = nCompetitors;
+        this.maxItems = nItems;
+        this.selfConfidenceRate = highConfidenceRate;
         this.time = time;
 
         audience = new ArrayList<>();
         competitors = new ArrayList<>();
         itemPrice = new HashMap<>();
+        winners = new HashMap<>();
         teams = new ArrayList<>();
 
         rt = Runtime.instance();
@@ -95,6 +98,7 @@ public class World extends jade.Boot {
         int tries = 0;
         int round;
         World world;
+        HashMap<Integer, Integer> teamWin = new HashMap<>();
 
         while (tries < nTries) {
             round = 0;
@@ -109,6 +113,12 @@ public class World extends jade.Boot {
                 round++;
             }
 
+            for (Competitor c : world.competitors) {
+                Map.Entry<Integer, Integer> e = world.getInfo(c).entrySet().iterator().next();
+                teamWin.merge(e.getKey(), e.getValue(), Integer::sum);
+            }
+
+
             try {
                 world.cc.kill();
                 world.rt.shutDown();
@@ -121,7 +131,42 @@ public class World extends jade.Boot {
             tries++;
         }
 
+        File f = new File("logs/csv");
+        FileWriter writer = null;
+        try {
+            f.createNewFile();
+            writer = new FileWriter(f);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (Map.Entry<Integer, Integer> e : teamWin.entrySet()) {
+            try {
+                if (writer != null) writer.write(e.getKey() + "," + e.getValue() + "\n");
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+        try {
+            if (writer != null) writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         System.exit(0);
+    }
+
+    private HashMap<Integer, Integer> getInfo(Competitor c) {
+        int avg = 0;
+        for (Integer i : c.getTeam().values()) avg += i;
+        avg /= c.getTeam().size();
+
+        Integer w = winners.get(c.getLocalName());
+        if (w == null) w = 0;
+
+        HashMap<Integer, Integer> m = new HashMap<>();
+        m.put(avg,w);
+
+        return m;
     }
 
     private void generateItems() {
@@ -186,8 +231,8 @@ public class World extends jade.Boot {
             }
         }
 
-        for(Competitor c : competitors) c.startConfidence();
-        for(Audience a : audience) a.startConfidence();
+        for (Competitor c : competitors) c.startConfidence();
+        for (Audience a : audience) a.startConfidence();
     }
 
     private void playRound() {
@@ -232,14 +277,7 @@ public class World extends jade.Boot {
         LOGGER.info("Competitors finished guessing.");
 
         // 5. Declare winner
-        String winner = "FAILED";
-        int guess = Integer.MIN_VALUE;
-        for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
-            if (Math.abs(itemPrice.get(item_id) - entry.getValue()) < Math.abs(itemPrice.get(item_id) - guess)) {
-                winner = entry.getKey();
-                guess = entry.getValue();
-            }
-        }
+        String winner = declareWinner(item_id, guesses);
 
         LOGGER.info("The winner was: " + winner);
 
@@ -250,5 +288,23 @@ public class World extends jade.Boot {
         for (Competitor cm : competitors) {
             cm.endRound(itemPrice.get(item_id));
         }
+    }
+
+    private String declareWinner(String item_id, HashMap<String, Integer> guesses) {
+        String winner = "FAILED";
+        int guess = Integer.MIN_VALUE;
+        for (Map.Entry<String, Integer> entry : guesses.entrySet()) {
+            if (Math.abs(itemPrice.get(item_id) - entry.getValue()) < Math.abs(itemPrice.get(item_id) - guess)) {
+                winner = entry.getKey();
+                guess = entry.getValue();
+            }
+        }
+
+        Integer w = winners.get(winner);
+        if (w == null) w = 1;
+        else w += 1;
+        winners.put(winner, w);
+
+        return winner;
     }
 }

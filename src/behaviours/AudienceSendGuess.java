@@ -16,7 +16,7 @@ public class AudienceSendGuess extends SendMsgBehaviour {
     protected ACLMessage getMessage(AID rcv) throws IOException {
         Audience p = (Audience) person;
         int performative;
-        if(p.getGuess(rcv.getLocalName()) == null) performative = ACLMessage.REFUSE;
+        if (p.getGuess(rcv.getLocalName()) == null) performative = ACLMessage.REFUSE;
         else performative = ACLMessage.AGREE;
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getGuess(rcv.getLocalName()));
