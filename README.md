@@ -18,11 +18,16 @@ After each round, each agent (audience and competitors) will change their confid
 The can play with any number of rounds, audience members, competitors and items.
 
 ## To run
-To run this project you need to download the jade library.
+To run this project you need to download the JADE framework.
 
 Then, compile the project with:
     
     javac -d "out/" -sourcepath "src/" -cp "path/to/jade.jar" src/world/World.java
 With the class files generated, now run:
     
-    java -cp "out/" world.World <nAudience> <nCompetitors> <nItems> <highConfidenceRate> <tries> <rounds>
+    java -cp "out/;path/to/jade.jar" world.World <nAudience> <nCompetitors> <nItems> <highConfidenceRate> <tries> <rounds>
+
+### Possible erros
+Some errors you might run into:
+ - Port 9090 must be unoccupied before running the project, either kill the process occupying it, or change the port in the code.
+ - Agent(s) dying during execution. If for any reason an agent dies, the execution of the program stops.

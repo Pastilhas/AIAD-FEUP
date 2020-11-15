@@ -8,6 +8,7 @@ import jade.domain.FIPAException;
 
 import java.util.*;
 import java.util.logging.FileHandler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -37,8 +38,17 @@ public abstract class Person extends Agent {
     private void setupLogger(long time) {
         try {
             FileHandler handler = new FileHandler("logs/" + time + "/" + id + ".log");
-            SimpleFormatter formatter = new SimpleFormatter();
-            handler.setFormatter(formatter);
+            handler.setFormatter(new SimpleFormatter() {
+                private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s%n";
+                private final Date dat = new Date();
+
+                @Override
+                public String format(LogRecord record) {
+                    dat.setTime(record.getMillis());
+                    String message = formatMessage(record);
+                    return String.format(format, dat, record.getLevel().getLocalizedName(), message);
+                }
+            });
             logger.addHandler(handler);
             logger.setUseParentHandlers(false);
         } catch (Exception e) {
