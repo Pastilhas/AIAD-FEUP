@@ -18,7 +18,10 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 
 public class World extends jade.Boot {
-    static final int MAX_PRICE = 15000;
+    public static final int MAX_PRICE = 15000;
+    static final int PORT = 9090;
+    static final int HIGH_CONFIDENCE = 10000;
+    static final int MAX_TEAM = 100;
     private final static Logger LOGGER = Logger.getLogger("world");
 
     private final ArrayList<Audience> audience;
@@ -51,7 +54,7 @@ public class World extends jade.Boot {
         teams = new ArrayList<>();
 
         rt = Runtime.instance();
-        Profile p = new ProfileImpl("localhost", 9090, null, true);
+        Profile p = new ProfileImpl("localhost", PORT, null, true);
         cc = rt.createMainContainer(p);
 
         // Generate items and people
@@ -270,7 +273,7 @@ public class World extends jade.Boot {
                 if (rnd.nextFloat() < highConfidenceRate) {
                     p = new Audience(id, rnd.nextFloat(), time);
                 } else {
-                    p = new Audience(id, 1000, time);
+                    p = new Audience(id, HIGH_CONFIDENCE, time);
                 }
 
                 int max = rnd.nextInt(nItems / 2);
@@ -280,7 +283,7 @@ public class World extends jade.Boot {
                 }
 
                 for (String t : teams) {
-                    int ta = rnd.nextInt(101);
+                    int ta = rnd.nextInt(MAX_TEAM+1);
                     p.addTeam(t, ta);
                 }
 
@@ -301,7 +304,7 @@ public class World extends jade.Boot {
                 Competitor p = new Competitor(id, time);
 
                 for (String t : teams) {
-                    int ta = rnd.nextInt(101);
+                    int ta = rnd.nextInt(MAX_TEAM+1);
                     p.addTeam(t, ta);
                 }
 

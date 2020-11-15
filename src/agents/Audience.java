@@ -1,14 +1,15 @@
 package agents;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 import behaviours.AudienceReceiveGuess;
 import behaviours.AudienceReceiveRequest;
 import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
 import jade.core.behaviours.SequentialBehaviour;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import world.World;
 
 public class Audience extends Person {
     private final HashMap<String, Integer> itemPrice;
@@ -73,7 +74,7 @@ public class Audience extends Person {
             int p = itemPrice.get(item);
             guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
         } else {
-            guess = rnd.nextInt(15001);
+            guess = rnd.nextInt(World.MAX_PRICE);
         }
     }
 
