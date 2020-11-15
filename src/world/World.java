@@ -123,8 +123,19 @@ public class World extends jade.Boot {
                 round++;
             }
 
-            compWin = world.getCompWin();
-
+            HashMap<String, Integer[]> m = world.getCompWin();
+            for(Map.Entry<String, Integer[]> e : m.entrySet()) {
+                String key = e.getKey();
+                Integer[] avg = new Integer[2];
+                avg[0] = e.getValue()[0];
+                avg[1] = e.getValue()[1];
+                if(compWin.get(key) != null) {
+                    avg[0] = (avg[0] + compWin.get(key)[0])/2;
+                    avg[1] = (avg[1] + compWin.get(key)[1])/2;
+                }
+                compWin.put(key, avg);
+            }
+            
             for (Map.Entry<Integer, Integer[]> e : world.roundPrices.entrySet()) {
                 Integer key = e.getKey();
                 Integer[] avg = new Integer[2];
