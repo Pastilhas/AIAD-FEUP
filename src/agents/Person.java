@@ -15,7 +15,6 @@ public abstract class Person extends Agent {
     public final Logger logger;
 
     final String id;
-    final long time;
     final HashMap<String, Integer> teamAffinity;
     final HashMap<String, Integer> guesses;
     final HashMap<String, Float> confidence;
@@ -25,7 +24,6 @@ public abstract class Person extends Agent {
 
     Person(String id, long time) {
         this.id = id;
-        this.time = time;
         teamAffinity = new HashMap<>();
         guesses = new HashMap<>();
         confidence = new HashMap<>();
@@ -33,10 +31,10 @@ public abstract class Person extends Agent {
         ready = false;
         guess = null;
         logger = Logger.getLogger(id);
-        setupLogger();
+        setupLogger(time);
     }
 
-    private void setupLogger() {
+    private void setupLogger(long time) {
         try {
             FileHandler handler = new FileHandler("logs/" + time + "/" + id + ".log");
             SimpleFormatter formatter = new SimpleFormatter();
@@ -85,7 +83,7 @@ public abstract class Person extends Agent {
         return getService("audience");
     }
 
-    public DFAgentDescription[] getService(String type) {
+    DFAgentDescription[] getService(String type) {
         DFAgentDescription[] res = null;
         try {
             DFAgentDescription dfd = new DFAgentDescription();
@@ -116,7 +114,7 @@ public abstract class Person extends Agent {
         ready = false;
     }
 
-    private void updateConfidence(int price) {
+    void updateConfidence(int price) {
         guesses.values().removeIf(Objects::isNull);
         if (guesses.isEmpty()) return;
 

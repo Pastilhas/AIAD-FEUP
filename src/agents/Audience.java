@@ -61,12 +61,13 @@ public class Audience extends Person {
     }
 
     @Override
-    public void endRound(int price) {
+	public
+    void endRound(int price) {
         super.endRound(price);
         compatibility.clear();
     }
 
-    public void initialGuess(String item) {
+    void initialGuess(String item) {
         Random rnd = new Random();
         if (itemPrice.get(item) != null) {
             int p = itemPrice.get(item);

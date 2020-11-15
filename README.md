@@ -1,7 +1,7 @@
 # AIAD-FEUP
 
 This repository is dedicated to the project of Agents and Distributed Artifitial Intelligence (AIAD) at Faculty of Engineering of the University of Porto (FEUP).
-Made by [João Campos](https://github.com/Pastilhas), [João Ribeiro](), and [André Mori](). *11/2020*
+Made by [João Campos](https://github.com/Pastilhas). *11/2020*
 
 ## Objective
 The objective of this work is to implement communication between agents, and for this communication to affect the decisions these agents take.
@@ -18,4 +18,11 @@ After each round, each agent (audience and competitors) will change their confid
 The can play with any number of rounds, audience members, competitors and items.
 
 ## To run
+To run this project you need to download the jade library.
 
+Then, compile the project with:
+    
+    javac -d "out/" -sourcepath "src/" -cp "path/to/jade.jar" src/world/World.java
+With the class files generated, now run:
+    
+    java -cp "out/" world.World <nAudience> <nCompetitors> <nItems> <highConfidenceRate> <tries> <rounds>

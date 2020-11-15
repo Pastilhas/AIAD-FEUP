@@ -4,11 +4,11 @@ import agents.Person;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 
-public abstract class ReceiveMsgBehaviour extends SimpleBehaviour {
+abstract class ReceiveMsgBehaviour extends SimpleBehaviour {
     protected final Person person;
     private boolean finished = false;
 
-    public ReceiveMsgBehaviour(Person p) {
+    ReceiveMsgBehaviour(Person p) {
         person = p;
     }
 

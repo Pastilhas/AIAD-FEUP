@@ -23,7 +23,9 @@ public class CompetitorReceiveGuess extends ReceiveMsgBehaviour {
             person.logger.info(String.format("COMPETITOR %10s RECEIVED GUESS %7d FROM %10s", person.getLocalName(), guess, sender));
             person.receiveGuess(sender, guess);
         } catch (UnreadableException e) {
+            person.logger.severe("Exception thrown while " + person.getLocalName() + " was receiving guess from " + sender + ".");
             e.printStackTrace();
+            System.exit(4);
         }
     }
 

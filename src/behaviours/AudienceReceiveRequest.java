@@ -22,7 +22,9 @@ public class AudienceReceiveRequest extends ReceiveMsgBehaviour {
             person.logger.info(String.format("AUDIENCE   %10s RECEIVED REQUEST       FROM %10s", person.getLocalName(), sender));
             p.checkCompetitor(sender, map);
         } catch (UnreadableException e) {
+            person.logger.severe("Exception thrown while " + person.getLocalName() + " was receiving request from " + sender + ".");
             e.printStackTrace();
+            System.exit(4);
 
         }
     }

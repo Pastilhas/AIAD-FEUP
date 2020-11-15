@@ -8,11 +8,11 @@ import jade.lang.acl.ACLMessage;
 
 import java.io.IOException;
 
-public abstract class SendMsgBehaviour extends SimpleBehaviour {
+abstract class SendMsgBehaviour extends SimpleBehaviour {
     protected final Person person;
     private boolean finished = false;
 
-    public SendMsgBehaviour(Person p) {
+    SendMsgBehaviour(Person p) {
         person = p;
     }
 
