@@ -58,11 +58,12 @@ public class World extends jade.Boot {
         teams.addAll(Arrays.asList("Amarelo", "Azul", "Vermelho", "Verde"));
         generateItems();
         generatePersons();
+
+        for(Competitor c : competitors) winners.put(c.getLocalName(), 0);
     }
 
     private static void setupLogger(String path) {
         try {
-            System.err.println(LOGGER.getHandlers());
             LOGGER.setUseParentHandlers(false);
             for (Handler h : LOGGER.getHandlers()) {
                 LOGGER.removeHandler(h);
@@ -91,7 +92,8 @@ public class World extends jade.Boot {
         return time;
     }
 
-    // int nAudience, int nCompetitors, int nItems, float highConfidenceRate, int tries, int rounds
+    // int nAudience, int nCompetitors, int nItems, float highConfidenceRate, int
+    // tries, int rounds
     public static void main(String[] args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
 
@@ -105,7 +107,7 @@ public class World extends jade.Boot {
         int tries = 0;
         int round;
         World world;
-        HashMap<Integer, Integer> teamWin = new HashMap<>();
+        HashMap<String, Integer[]> compWin = new HashMap<>();
         HashMap<Integer, Integer[]> avgRoundPrices = new HashMap<>();
 
         while (tries < nTries) {
@@ -121,19 +123,16 @@ public class World extends jade.Boot {
                 round++;
             }
 
-            for (Competitor c : world.competitors) {
-                Map.Entry<Integer, Integer> e = world.getInfo(c).entrySet().iterator().next();
-                teamWin.merge(e.getKey(), e.getValue(), Integer::sum);
-            }
+            compWin = world.getCompWin();
 
-            for(Map.Entry<Integer, Integer[]> e : world.roundPrices.entrySet()) {
+            for (Map.Entry<Integer, Integer[]> e : world.roundPrices.entrySet()) {
                 Integer key = e.getKey();
                 Integer[] avg = new Integer[2];
                 avg[0] = e.getValue()[0];
                 avg[1] = e.getValue()[1];
-                if(avgRoundPrices.get(key) != null){
-                    avg[0] = (avg[0] + avgRoundPrices.get(key)[0])/2;
-                    avg[1] = (avg[1] + avgRoundPrices.get(key)[1])/2;
+                if (avgRoundPrices.get(key) != null) {
+                    avg[0] = (avg[0] + avgRoundPrices.get(key)[0]) / 2;
+                    avg[1] = (avg[1] + avgRoundPrices.get(key)[1]) / 2;
                 }
                 avgRoundPrices.put(key, avg);
             }
@@ -150,10 +149,40 @@ public class World extends jade.Boot {
             tries++;
         }
 
-        writeTeamWins(teamWin);
-        writeRoundPrice(avgRoundPrices);        
+        writeCompWins(compWin);
+        writeRoundPrice(avgRoundPrices);
 
         System.exit(0);
+    }
+
+    private HashMap<String, Integer[]> getCompWin() {
+        HashMap<String, Integer[]> compWin = new HashMap<>();
+
+        for(Audience a : audience) {
+            for(Competitor c : competitors) a.checkCompetitor(c.getLocalName(), c.getTeam());
+        }
+
+		for (Competitor c : competitors) {
+            String id = c.getLocalName();
+            Integer[] a = new Integer[2];
+            a[0] = getWins(c);
+            a[1] = getHelp(c);
+            compWin.put(id, a);
+        }
+
+        return compWin;
+    }
+
+    private Integer getHelp(Competitor c) {
+        Integer helpers = 0;
+        for(Audience a : audience) {
+            if(a.getCompatibility().get(c.getLocalName())) helpers++;
+        }
+        return helpers;
+    }
+
+    private Integer getWins(Competitor c) {
+        return winners.get(c.getLocalName());
     }
 
     private static void writeRoundPrice(HashMap<Integer, Integer[]> avgRoundPrices) {
@@ -167,20 +196,22 @@ public class World extends jade.Boot {
         }
         for (Map.Entry<Integer, Integer[]> e : avgRoundPrices.entrySet()) {
             try {
-                if (writer != null) writer.write(e.getKey() + "," + e.getValue()[0] + "," + e.getValue()[1] + "\n");
+                if (writer != null)
+                    writer.write(e.getKey() + "," + e.getValue()[0] + "," + e.getValue()[1] + "\n");
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
         try {
-            if (writer != null) writer.close();
+            if (writer != null)
+                writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void writeTeamWins(HashMap<Integer, Integer> teamWin) {
-        File f = new File("logs/teamaffinity_wins.csv");
+    private static void writeCompWins(HashMap<String, Integer[]> compWin) {
+        File f = new File("logs/competitor_wins.csv");
         FileWriter writer = null;
         try {
             f.createNewFile();
@@ -188,32 +219,20 @@ public class World extends jade.Boot {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<Integer, Integer> e : teamWin.entrySet()) {
-            try {
-                if (writer != null) writer.write(e.getKey() + "," + e.getValue() + "\n");
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
+        if (writer != null)
+            for (Map.Entry<String, Integer[]> e : compWin.entrySet()) {
+                try {
+                    writer.write(e.getKey() + "," + e.getValue()[0] + "," + e.getValue()[1] + "\n");
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }
-        }
         try {
-            if (writer != null) writer.close();
+            if (writer != null)
+                writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private HashMap<Integer, Integer> getInfo(Competitor c) {
-        int avg = 0;
-        for (Integer i : c.getTeam().values()) avg += i;
-        avg /= c.getTeam().size();
-
-        Integer w = winners.get(c.getLocalName());
-        if (w == null) w = 0;
-
-        HashMap<Integer, Integer> m = new HashMap<>();
-        m.put(avg,w);
-
-        return m;
     }
 
     private void generateItems() {
@@ -234,7 +253,6 @@ public class World extends jade.Boot {
                 } else {
                     p = new Audience(id, 1000, time);
                 }
-
 
                 int max = rnd.nextInt(nItems / 2);
                 for (int j = 0; j < max; j++) {
@@ -278,8 +296,10 @@ public class World extends jade.Boot {
             }
         }
 
-        for (Competitor c : competitors) c.startConfidence();
-        for (Audience a : audience) a.startConfidence();
+        for (Competitor c : competitors)
+            c.startConfidence();
+        for (Audience a : audience)
+            a.startConfidence();
     }
 
     private void playRound(int round) {
@@ -341,7 +361,8 @@ public class World extends jade.Boot {
     private void updateRoundPrices(int round, int price, HashMap<String, Integer> guesses) {
         guesses.values().removeIf(v -> v == null);
         ArrayList<Integer> diffs = new ArrayList<>();
-        for(Integer i : guesses.values()) diffs.add(Math.abs(price - i));
+        for (Integer i : guesses.values())
+            diffs.add(Math.abs(price - i));
 
         Integer[] a = new Integer[2];
         a[0] = Collections.min(diffs);
@@ -360,11 +381,7 @@ public class World extends jade.Boot {
             }
         }
 
-        Integer w = winners.get(winner);
-        if (w == null) w = 1;
-        else w += 1;
-        winners.put(winner, w);
-
+        winners.merge(winner, 1, Integer::sum);
         return winner;
     }
 }

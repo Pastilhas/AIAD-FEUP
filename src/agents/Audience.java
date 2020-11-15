@@ -12,7 +12,7 @@ import java.util.Random;
 
 public class Audience extends Person {
     private final HashMap<String, Integer> itemPrice;
-    private final HashMap<String, Integer> compatibility;
+    private final HashMap<String, Boolean> compatibility;
     private final float selfconfidence;
 
     public Audience(String id, float selfconfidence, long time) {
@@ -51,7 +51,7 @@ public class Audience extends Person {
     }
 
     public Integer getGuess(String id) {
-        if (id == null || compatibility.get(id) > 80) return getGuess();
+        if (id == null || compatibility.get(id)) return getGuess();
         else return null;
     }
 
@@ -81,15 +81,21 @@ public class Audience extends Person {
         if (value != null) itemPrice.put(id, value);
     }
 
-    public HashMap<String, Integer> getCompatibility() {
+    public HashMap<String, Boolean> getCompatibility() {
         return compatibility;
     }
 
     public void checkCompetitor(String id, HashMap<String, Integer> map) {
-        int comp = 0;
+        int times = 0;
         for (Map.Entry<String, Integer> entry : teamAffinity.entrySet()) {
-            comp += Math.abs(entry.getValue() - map.get(entry.getKey()));
+            if(Math.abs(entry.getValue() - map.get(entry.getKey())) > 20) {
+                times++;
+            }
+            if(times >= 2) {
+                compatibility.put(id, false);
+                return;
+            }
         }
-        compatibility.put(id, comp);
+        compatibility.put(id, true);
     }
 }
