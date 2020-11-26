@@ -1,12 +1,12 @@
 package behaviours;
 
+import java.io.IOException;
+
 import agents.Person;
 import jade.core.AID;
-import jade.core.behaviours.SimpleBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
-
-import java.io.IOException;
+import sajas.core.behaviours.SimpleBehaviour;
 
 abstract class SendMsgBehaviour extends SimpleBehaviour {
     protected final Person person;

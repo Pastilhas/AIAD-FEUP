@@ -1,8 +1,8 @@
 package behaviours;
 
 import agents.Person;
-import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
+import sajas.core.behaviours.SimpleBehaviour;
 
 abstract class ReceiveMsgBehaviour extends SimpleBehaviour {
     protected final Person person;

@@ -8,7 +8,7 @@ import behaviours.AudienceReceiveGuess;
 import behaviours.AudienceReceiveRequest;
 import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
-import jade.core.behaviours.SequentialBehaviour;
+import sajas.core.behaviours.SequentialBehaviour;
 import world.World;
 
 public class Audience extends Person {

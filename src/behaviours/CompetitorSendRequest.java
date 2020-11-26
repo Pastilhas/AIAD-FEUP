@@ -1,11 +1,11 @@
 package behaviours;
 
+import java.io.IOException;
+
 import agents.Competitor;
 import jade.core.AID;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
-
-import java.io.IOException;
 
 public class CompetitorSendRequest extends SendMsgBehaviour {
     public CompetitorSendRequest(Competitor c) {

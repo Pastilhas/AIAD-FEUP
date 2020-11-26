@@ -1,9 +1,16 @@
 package world;
 
 import java.io.File;
-import java.io.FileWriter;
+/* import java.io.FileWriter; */
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
 import java.util.logging.FileHandler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -13,11 +20,13 @@ import agents.Audience;
 import agents.Competitor;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
-import jade.core.Runtime;
-import jade.wrapper.AgentController;
-import jade.wrapper.ContainerController;
+import sajas.core.Runtime;
+import sajas.sim.repast3.Repast3Launcher;
+import sajas.wrapper.AgentController;
+import sajas.wrapper.ContainerController;
+import uchicago.src.sim.engine.SimInit;
 
-public class World extends jade.Boot {
+public class World extends Repast3Launcher {
     public static final int MAX_PRICE = 15000;
     static final int PORT = 9090;
     static final int HIGH_CONFIDENCE = 10000;
@@ -27,14 +36,12 @@ public class World extends jade.Boot {
     private final ArrayList<Audience> audience;
     private final ArrayList<Competitor> competitors;
     private final HashMap<String, Integer> itemPrice;
-    private final HashMap<String, Integer> winners;
-    private final HashMap<Integer, Integer[]> roundPrices;
     private final ArrayList<String> teams;
     private final int nAudience;
     private final int nCompetitors;
     private final int nItems;
     private final Runtime rt;
-    private final ContainerController cc;
+    private ContainerController cc;
     private final float highConfidenceRate;
     private final long time;
 
@@ -49,212 +56,13 @@ public class World extends jade.Boot {
         audience = new ArrayList<>();
         competitors = new ArrayList<>();
         itemPrice = new HashMap<>();
-        winners = new HashMap<>();
-        roundPrices = new HashMap<>();
         teams = new ArrayList<>();
 
         rt = Runtime.instance();
-        Profile p = new ProfileImpl("localhost", PORT, null, true);
-        cc = rt.createMainContainer(p);
 
         // Generate items and people
         teams.addAll(Arrays.asList("Amarelo", "Azul", "Vermelho", "Verde"));
         generateItems();
-        generatePersons();
-
-        for (Competitor c : competitors)
-            winners.put(c.getLocalName(), 0);
-    }
-
-    private static void setupLogger(String path) {
-        try {
-            LOGGER.setUseParentHandlers(false);
-            FileHandler handler = new FileHandler(path);
-            handler.setFormatter(new SimpleFormatter() {
-                private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s%n";
-                private final Date dat = new Date();
-
-                @Override
-                public String format(LogRecord record) {
-                    dat.setTime(record.getMillis());
-                    String message = formatMessage(record);
-                    return String.format(format, dat, record.getLevel().getLocalizedName(), message);
-                }
-            });
-            LOGGER.addHandler(handler);
-        } catch (IOException e) {
-            System.err.println("Exception thrown while setting up world logger.");
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    private static long setupLogs() {
-        long time = System.currentTimeMillis();
-
-        File directory = new File("logs/" + time);
-        if (!directory.exists()) {
-            directory.getParentFile().mkdirs();
-            directory.mkdir();
-        }
-
-        setupLogger("logs/" + time + "/" + "world.log");
-        return time;
-    }
-
-    // int nAudience, int nCompetitors, int nItems, float highConfidenceRate, int tries, int rounds
-    public static void main(String[] args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "");
-
-        int nAudience = Integer.parseInt(args[0]);
-        int nCompetitors = Integer.parseInt(args[1]);
-        int nItems = Integer.parseInt(args[2]);
-        float highConfidenceRate = Float.parseFloat(args[3]);
-        int nTries = Integer.parseInt(args[4]);
-        int nRounds = Integer.parseInt(args[5]);
-
-        int tries = 0;
-        int round;
-        World world;
-        HashMap<String, Integer[]> compWin = new HashMap<>();
-        HashMap<Integer, Integer[]> avgRoundPrices = new HashMap<>();
-
-        while (tries < nTries) {
-            round = 0;
-            long time = setupLogs();
-            world = new World(nAudience, nCompetitors, nItems, highConfidenceRate, time);
-            LOGGER.info("World created");
-
-            while (round < nRounds) {
-                LOGGER.info("Start round " + round);
-                world.playRound(round);
-                LOGGER.info("End round " + round);
-                round++;
-            }
-
-            HashMap<String, Integer[]> m = world.getCompWin();
-            for (Map.Entry<String, Integer[]> e : m.entrySet()) {
-                String key = e.getKey();
-                Integer[] avg = new Integer[2];
-                avg[0] = e.getValue()[0];
-                avg[1] = e.getValue()[1];
-                if (compWin.get(key) != null) {
-                    avg[0] = (avg[0] + compWin.get(key)[0]) / 2;
-                    avg[1] = (avg[1] + compWin.get(key)[1]) / 2;
-                }
-                compWin.put(key, avg);
-            }
-
-            for (Map.Entry<Integer, Integer[]> e : world.roundPrices.entrySet()) {
-                Integer key = e.getKey();
-                Integer[] avg = new Integer[2];
-                avg[0] = e.getValue()[0];
-                avg[1] = e.getValue()[1];
-                if (avgRoundPrices.get(key) != null) {
-                    avg[0] = (avg[0] + avgRoundPrices.get(key)[0]) / 2;
-                    avg[1] = (avg[1] + avgRoundPrices.get(key)[1]) / 2;
-                }
-                avgRoundPrices.put(key, avg);
-            }
-
-            try {
-                world.cc.kill();
-                world.rt.shutDown();
-            } catch (Exception e) {
-                LOGGER.severe("Exception thrown while shutting down.");
-                e.printStackTrace();
-                System.exit(1);
-            }
-
-            tries++;
-        }
-
-        writeCompWins(compWin);
-        writeRoundPrice(avgRoundPrices);
-
-        System.exit(0);
-    }
-
-    private HashMap<String, Integer[]> getCompWin() {
-        HashMap<String, Integer[]> compWin = new HashMap<>();
-
-        for (Audience a : audience) {
-            for (Competitor c : competitors)
-                a.checkCompetitor(c.getLocalName(), c.getTeam());
-        }
-
-        for (Competitor c : competitors) {
-            String id = c.getLocalName();
-            Integer[] a = new Integer[2];
-            a[0] = getWins(c);
-            a[1] = getHelp(c);
-            compWin.put(id, a);
-        }
-
-        return compWin;
-    }
-
-    private Integer getHelp(Competitor c) {
-        Integer helpers = 0;
-        for (Audience a : audience) {
-            if (a.getCompatibility().get(c.getLocalName()))
-                helpers++;
-        }
-        return helpers;
-    }
-
-    private Integer getWins(Competitor c) {
-        return winners.get(c.getLocalName());
-    }
-
-    private static void writeRoundPrice(HashMap<Integer, Integer[]> avgRoundPrices) {
-        File f = new File("logs/roundprice.csv");
-        FileWriter writer = null;
-        try {
-            f.createNewFile();
-            writer = new FileWriter(f);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        for (Map.Entry<Integer, Integer[]> e : avgRoundPrices.entrySet()) {
-            try {
-                if (writer != null)
-                    writer.write(e.getKey() + "," + e.getValue()[0] + "," + e.getValue()[1] + "\n");
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }
-        try {
-            if (writer != null)
-                writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void writeCompWins(HashMap<String, Integer[]> compWin) {
-        File f = new File("logs/competitor_wins.csv");
-        FileWriter writer = null;
-        try {
-            f.createNewFile();
-            writer = new FileWriter(f);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (writer != null)
-            for (Map.Entry<String, Integer[]> e : compWin.entrySet()) {
-                try {
-                    writer.write(e.getKey() + "," + e.getValue()[0] + "," + e.getValue()[1] + "\n");
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            }
-        try {
-            if (writer != null)
-                writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void generateItems() {
@@ -283,7 +91,7 @@ public class World extends jade.Boot {
                 }
 
                 for (String t : teams) {
-                    int ta = rnd.nextInt(MAX_TEAM+1);
+                    int ta = rnd.nextInt(MAX_TEAM + 1);
                     p.addTeam(t, ta);
                 }
 
@@ -304,7 +112,7 @@ public class World extends jade.Boot {
                 Competitor p = new Competitor(id, time);
 
                 for (String t : teams) {
-                    int ta = rnd.nextInt(MAX_TEAM+1);
+                    int ta = rnd.nextInt(MAX_TEAM + 1);
                     p.addTeam(t, ta);
                 }
 
@@ -369,7 +177,7 @@ public class World extends jade.Boot {
         String winner = declareWinner(item_id, guesses);
         LOGGER.info("The winner was: " + winner);
 
-        updateRoundPrices(round, itemPrice.get(item_id), guesses);
+        /* updateRoundPrices(round, itemPrice.get(item_id), guesses); */
 
         // 6. End Round
         for (Audience au : audience) {
@@ -378,19 +186,6 @@ public class World extends jade.Boot {
         for (Competitor cm : competitors) {
             cm.endRound(itemPrice.get(item_id));
         }
-    }
-
-    private void updateRoundPrices(int round, int price, HashMap<String, Integer> guesses) {
-        guesses.values().removeIf(v -> v == null);
-        ArrayList<Integer> diffs = new ArrayList<>();
-        for (Integer i : guesses.values())
-            diffs.add(Math.abs(price - i));
-
-        Integer[] a = new Integer[2];
-        a[0] = Collections.min(diffs);
-        a[1] = Collections.max(diffs);
-
-        roundPrices.put(round, a);
     }
 
     private String declareWinner(String item_id, HashMap<String, Integer> guesses) {
@@ -402,8 +197,96 @@ public class World extends jade.Boot {
                 guess = entry.getValue();
             }
         }
-
-        winners.merge(winner, 1, Integer::sum);
         return winner;
+    }
+
+    @Override
+    public String[] getInitParam() {
+        return new String[0];
+    }
+
+    @Override
+    public String getName() {
+        return "World - SAJaS Project";
+    }
+
+    @Override
+    protected void launchJADE() {
+        Profile p = new ProfileImpl("localhost", PORT, null, true);
+        cc = rt.createMainContainer(p);
+		generatePersons();
+    }
+
+    private static void setupLogger(String path) {
+        try {
+            LOGGER.setUseParentHandlers(false);
+            FileHandler handler = new FileHandler(path);
+            handler.setFormatter(new SimpleFormatter() {
+                private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s%n";
+                private final Date dat = new Date();
+
+                @Override
+                public String format(LogRecord record) {
+                    dat.setTime(record.getMillis());
+                    String message = formatMessage(record);
+                    return String.format(format, dat, record.getLevel().getLocalizedName(), message);
+                }
+            });
+            LOGGER.addHandler(handler);
+        } catch (IOException e) {
+            System.err.println("Exception thrown while setting up world logger.");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private static long setupLogs() {
+        long time = System.currentTimeMillis();
+
+        File directory = new File("logs/" + time);
+        if (!directory.exists()) {
+            directory.getParentFile().mkdirs();
+            directory.mkdir();
+        }
+
+        setupLogger("logs/" + time + "/" + "world.log");
+        return time;
+    }
+
+    // int nAudience, int nCompetitors, int nItems, float highConfidenceRate, int tries, int rounds
+    public static void main(String[] args) {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%s");
+
+        int nAudience = Integer.parseInt(args[0]);
+        int nCompetitors = Integer.parseInt(args[1]);
+        int nItems = Integer.parseInt(args[2]);
+        float highConfidenceRate = Float.parseFloat(args[3]);
+
+        int nTries = Integer.parseInt(args[4]);
+        int nRounds = Integer.parseInt(args[5]);
+
+        int tries = 0;
+        int round;
+        World world;
+
+
+        while (tries < nTries) {
+            round = 0;
+            long time = setupLogs();
+            world = new World(nAudience, nCompetitors, nItems, highConfidenceRate, time);
+            SimInit init = new SimInit();
+            init.loadModel(world, null, false);
+            LOGGER.info("World created");
+
+            while (round < nRounds) {
+                LOGGER.info("Start round " + round);
+                world.playRound(round);
+                LOGGER.info("End round " + round);
+                round++;
+            }
+            tries++;
+        }
+
+        System.exit(0);
     }
 }

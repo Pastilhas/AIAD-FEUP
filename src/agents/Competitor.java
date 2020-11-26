@@ -2,7 +2,7 @@ package agents;
 
 import behaviours.CompetitorReceiveGuess;
 import behaviours.CompetitorSendRequest;
-import jade.core.behaviours.SequentialBehaviour;
+import sajas.core.behaviours.SequentialBehaviour;
 
 public class Competitor extends Person {
     public Competitor(String id, long time) {
