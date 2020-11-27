@@ -23,11 +23,13 @@ abstract class SendMsgBehaviour extends SimpleBehaviour {
         for (DFAgentDescription re : res) {
             try {
                 AID rcv = re.getName();
-                if (person.getLocalName().equals(rcv.getLocalName())) continue;
+                if (person.getLocalName().equals(rcv.getLocalName()))
+                    continue;
                 ACLMessage msg = getMessage(rcv);
                 person.send(msg);
             } catch (IOException e) {
-                person.logger.warning("Agent " + person.getLocalName() + " failed to send message to " + re.getName().getLocalName() + ".");
+                person.logger.warning(
+                        "Agent " + person.getLocalName() + " failed to send message to " + re.getName().getLocalName());
             }
         }
 

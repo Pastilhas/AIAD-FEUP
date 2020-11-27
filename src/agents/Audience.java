@@ -4,12 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import behaviours.AudienceReceiveGuess;
-import behaviours.AudienceReceiveRequest;
 import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
-import sajas.core.behaviours.SequentialBehaviour;
-import world.World;
+import behaviours.ReceiveMsgBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.UnreadableException;
 
 public class Audience extends Person {
     private final HashMap<String, Integer> itemPrice;
@@ -26,16 +25,7 @@ public class Audience extends Person {
     @Override
     protected void setup() {
         setupAgent("audience");
-    }
-
-    @Override
-    void behaviours() {
-        SequentialBehaviour sb = new SequentialBehaviour();
-        sb.addSubBehaviour(new AudienceShareGuess(this));
-        sb.addSubBehaviour(new AudienceReceiveGuess(this));
-        sb.addSubBehaviour(new AudienceReceiveRequest(this));
-        sb.addSubBehaviour(new AudienceSendGuess(this));
-        addBehaviour(sb);
+        addBehaviour(new ReceiveMsgBehaviour(this));
     }
 
     @Override
@@ -48,24 +38,13 @@ public class Audience extends Person {
         maxConfidence += selfconfidence;
 
         guess = Math.round(currentGuess / maxConfidence);
-        ready = true;
     }
 
     public Integer getGuess(String id) {
-        if (id == null || compatibility.get(id)) return getGuess();
-        else return null;
-    }
-
-    public void startRound(String id) {
-        initialGuess(id);
-        super.startRound();
-    }
-
-    @Override
-	public
-    void endRound(int price) {
-        super.endRound(price);
-        compatibility.clear();
+        if (id == null || compatibility.get(id))
+            return getGuess();
+        else
+            return null;
     }
 
     void initialGuess(String item) {
@@ -74,12 +53,15 @@ public class Audience extends Person {
             int p = itemPrice.get(item);
             guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
         } else {
-            guess = rnd.nextInt(World.MAX_PRICE);
+            guess = rnd.nextInt(1555);
         }
+        phase = Phase.SHARE;
+        addBehaviour(new AudienceShareGuess(this));
     }
 
     public void addItem(String id, Integer value) {
-        if (value != null) itemPrice.put(id, value);
+        if (value != null)
+            itemPrice.put(id, value);
     }
 
     public HashMap<String, Boolean> getCompatibility() {
@@ -89,14 +71,66 @@ public class Audience extends Person {
     public void checkCompetitor(String id, HashMap<String, Integer> map) {
         int times = 0;
         for (Map.Entry<String, Integer> entry : teamAffinity.entrySet()) {
-            if(Math.abs(entry.getValue() - map.get(entry.getKey())) > 20) {
+            if (Math.abs(entry.getValue() - map.get(entry.getKey())) > 20) {
                 times++;
             }
-            if(times >= 2) {
+            if (times >= 2) {
                 compatibility.put(id, false);
                 return;
             }
         }
         compatibility.put(id, true);
+    }
+
+    @Override
+    public void parseAudienceMsg(ACLMessage msg) {
+        String sender = msg.getSender().getLocalName();
+        try {
+            Integer content = (Integer) msg.getContentObject();
+            receiveGuess(sender, content);
+        } catch (UnreadableException e) {
+            logger.severe("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
+            e.printStackTrace();
+        }
+
+        if (getAudience().length <= guesses.size()) {
+            finalGuess();
+            if (getCompetitor().length <= compatibility.size()) {
+                phase = Phase.SEND;
+                addBehaviour(new AudienceSendGuess(this));
+            } else
+                phase = Phase.WAIT2;
+        }
+    }
+
+    @Override
+    public void parseCompetitorMsg(ACLMessage msg) {
+        String sender = msg.getSender().getLocalName();
+        try {
+            HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
+            logger.info(String.format("AUDIENCE   %10s RECEIVED REQUEST       FROM %10s", getLocalName(), sender));
+            checkCompetitor(sender, map);
+        } catch (UnreadableException e) {
+            logger.severe("Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
+            e.printStackTrace();
+        }
+        if (phase == Phase.WAIT2 && getCompetitor().length <= compatibility.size()) {
+            phase = Phase.SEND;
+            addBehaviour(new AudienceSendGuess(this));
+        }
+    }
+
+    @Override
+    protected void startRound(String item_id) {
+        initialGuess(item_id);
+    }
+
+    @Override
+    protected void endRound(Integer item_price) {
+        updateConfidence(item_price);
+        guess = null;
+        guesses.clear();
+        compatibility.clear();
+        phase = Phase.INIT;
     }
 }

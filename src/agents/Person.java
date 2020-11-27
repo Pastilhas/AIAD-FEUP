@@ -1,66 +1,38 @@
 package agents;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.logging.FileHandler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.Scanner;
 
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import sajas.core.Agent;
+import jade.lang.acl.ACLMessage;
 import sajas.domain.DFService;
 
-public abstract class Person extends Agent {
-    public final Logger logger;
+public abstract class Person extends MyAgent {
+    public enum Phase {
+        INIT, WAIT, READY, SHARE, WAIT2, SEND
+    };
 
-    final String id;
-    final HashMap<String, Integer> teamAffinity;
-    final HashMap<String, Integer> guesses;
-    final HashMap<String, Float> confidence;
-    final DFAgentDescription dfd;
-    public boolean ready;
+    public Phase phase;
+
+    protected final HashMap<String, Integer> teamAffinity;
+    protected final HashMap<String, Integer> guesses;
+    protected final HashMap<String, Float> confidence;
     Integer guess;
 
     Person(String id, long time) {
-        this.id = id;
+        super(id, time);
+        phase = Phase.INIT;
+
         teamAffinity = new HashMap<>();
         guesses = new HashMap<>();
         confidence = new HashMap<>();
-        dfd = new DFAgentDescription();
-        ready = false;
         guess = null;
-        logger = Logger.getLogger(id);
-        setupLogger(time);
-    }
-
-    private void setupLogger(long time) {
-        try {
-            FileHandler handler = new FileHandler("logs/" + time + "/" + id + ".log");
-            handler.setFormatter(new SimpleFormatter() {
-                private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s%n";
-                private final Date dat = new Date();
-
-                @Override
-                public String format(LogRecord record) {
-                    dat.setTime(record.getMillis());
-                    String message = formatMessage(record);
-                    return String.format(format, dat, record.getLevel().getLocalizedName(), message);
-                }
-            });
-            logger.addHandler(handler);
-            logger.setUseParentHandlers(false);
-        } catch (Exception e) {
-            System.err.println("Exception thrown while setting up " + id + " logger.");
-            e.printStackTrace();
-            System.exit(3);
-        }
     }
 
     public void startConfidence() {
@@ -69,13 +41,15 @@ public abstract class Person extends Agent {
 
         for (DFAgentDescription a : aud) {
             String id = a.getName().getLocalName();
-            if (id.equals(getLocalName())) continue;
+            if (id.equals(getLocalName()))
+                continue;
             confidence.putIfAbsent(id, rnd.nextFloat() + 0.2f);
         }
     }
 
     public void addTeam(String id, Integer value) {
-        if (value != null) teamAffinity.put(id, value);
+        if (value != null)
+            teamAffinity.put(id, value);
     }
 
     public HashMap<String, Integer> getGuesses() {
@@ -90,63 +64,26 @@ public abstract class Person extends Agent {
         return teamAffinity;
     }
 
-    public DFAgentDescription[] getCompetitor() {
-        return getService("competitor");
-    }
-
-    public DFAgentDescription[] getAudience() {
-        return getService("audience");
-    }
-
-    DFAgentDescription[] getService(String type) {
-        DFAgentDescription[] res = null;
-        try {
-            DFAgentDescription dfd = new DFAgentDescription();
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType(type);
-            dfd.addServices(sd);
-            res = DFService.search(this, dfd);
-        } catch (FIPAException e) {
-            logger.severe("Exception thrown while getting service " + type + ".");
-            e.printStackTrace();
-            System.exit(3);
-        }
-        return res;
-    }
-
     public void receiveGuess(String id, Integer value) {
         guesses.put(id, value);
     }
 
-    public void startRound() {
-        behaviours();
-    }
-
-    public void endRound(int price) {
-        updateConfidence(price);
-        guess = null;
-        guesses.clear();
-        ready = false;
-    }
-
     void updateConfidence(int price) {
         guesses.values().removeIf(Objects::isNull);
-        if (guesses.isEmpty()) return;
+        if (guesses.isEmpty())
+            return;
 
         Integer min = Collections.min(guesses.values());
         Integer max = Collections.max(guesses.values());
         int maxDiff = Math.max(Math.abs(price - min), Math.abs(price - max));
 
         for (Map.Entry<String, Float> entry : confidence.entrySet()) {
-            if (guesses.get(entry.getKey()) == null) continue;
+            if (guesses.get(entry.getKey()) == null)
+                continue;
             int diff = Math.abs(guesses.get(entry.getKey()) - price);
             confidence.replace(entry.getKey(), entry.getValue() * (1.5f - diff / maxDiff));
         }
     }
-
-    abstract void behaviours();
-
-    public abstract void finalGuess();
 
     float[] finalGuessCalc() {
         guesses.values().removeIf(Objects::isNull);
@@ -176,9 +113,32 @@ public abstract class Person extends Agent {
             dfd.addServices(sd);
             DFService.register(this, dfd);
         } catch (FIPAException e) {
-            logger.severe("Exception thrown while setting up " + id + ".");
+            logger.severe("Exception thrown while setting up " + id);
             e.printStackTrace();
             System.exit(3);
         }
     }
+
+    public void parseWorldMsg(ACLMessage msg) {
+        Scanner sc = new Scanner(msg.getContent()); // start <string item_id> OR end <int item_price>
+
+        String m = sc.next();
+        if (m.equals("start")) {
+            String item_id = sc.next();
+            startRound(item_id);
+        } else if (m.equals("end")) {
+            Integer item_price = sc.nextInt();
+            endRound(item_price);
+        }
+    }
+
+    public abstract void finalGuess();
+
+    public abstract void parseAudienceMsg(ACLMessage msg);
+
+    public abstract void parseCompetitorMsg(ACLMessage msg);
+
+    protected abstract void startRound(String item_id);
+
+    protected abstract void endRound(Integer item_price);
 }

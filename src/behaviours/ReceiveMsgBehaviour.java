@@ -2,45 +2,26 @@ package behaviours;
 
 import agents.Person;
 import jade.lang.acl.ACLMessage;
-import sajas.core.behaviours.SimpleBehaviour;
+import sajas.core.behaviours.CyclicBehaviour;
 
-abstract class ReceiveMsgBehaviour extends SimpleBehaviour {
+public class ReceiveMsgBehaviour extends CyclicBehaviour {
     protected final Person person;
-    private boolean finished = false;
 
-    ReceiveMsgBehaviour(Person p) {
+    public ReceiveMsgBehaviour(Person p) {
         person = p;
     }
 
     @Override
     public void action() {
-        ACLMessage msg = person.blockingReceive();
+        ACLMessage msg = person.receive();
         if (msg != null) {
             if (msg.getSender().getLocalName().startsWith("audience")) {
-                parseAudienceMsg(msg);
+                person.parseAudienceMsg(msg);
             } else if (msg.getSender().getLocalName().startsWith("competitor")) {
-                parseCompetitorMsg(msg);
+                person.parseCompetitorMsg(msg);
             }
         } else {
             block();
         }
-
-        if (finishCondition()) {
-            finish();
-            finished = true;
-        }
-    }
-
-    protected abstract void parseCompetitorMsg(ACLMessage msg);
-
-    protected abstract void parseAudienceMsg(ACLMessage msg);
-
-    protected abstract boolean finishCondition();
-
-    protected abstract void finish();
-
-    @Override
-    public boolean done() {
-        return finished;
     }
 }
