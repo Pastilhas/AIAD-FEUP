@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
+import behaviours.ReceiveMsgBehaviour;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -18,8 +19,6 @@ public abstract class Person extends MyAgent {
         INIT, WAIT, READY, SHARE, WAIT2, SEND
     };
 
-    public Phase phase;
-
     protected final HashMap<String, Integer> teamAffinity;
     protected final HashMap<String, Integer> guesses;
     protected final HashMap<String, Float> confidence;
@@ -27,7 +26,6 @@ public abstract class Person extends MyAgent {
 
     Person(String id, long time) {
         super(id, time);
-        phase = Phase.INIT;
 
         teamAffinity = new HashMap<>();
         guesses = new HashMap<>();
@@ -104,21 +102,6 @@ public abstract class Person extends MyAgent {
         return a;
     }
 
-    protected void setupAgent(String type) {
-        try {
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType(type);
-            sd.setName(getLocalName());
-            dfd.setName(getAID());
-            dfd.addServices(sd);
-            DFService.register(this, dfd);
-        } catch (FIPAException e) {
-            logger.severe("Exception thrown while setting up " + id);
-            e.printStackTrace();
-            System.exit(3);
-        }
-    }
-
     public void parseWorldMsg(ACLMessage msg) {
         Scanner sc = new Scanner(msg.getContent()); // start <string item_id> OR end <int item_price>
 
@@ -133,10 +116,6 @@ public abstract class Person extends MyAgent {
     }
 
     public abstract void finalGuess();
-
-    public abstract void parseAudienceMsg(ACLMessage msg);
-
-    public abstract void parseCompetitorMsg(ACLMessage msg);
 
     protected abstract void startRound(String item_id);
 

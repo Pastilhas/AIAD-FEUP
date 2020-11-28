@@ -2,18 +2,18 @@ package behaviours;
 
 import java.io.IOException;
 
-import agents.Person;
+import agents.MyAgent;
 import jade.core.AID;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import sajas.core.behaviours.SimpleBehaviour;
 
 abstract class SendMsgBehaviour extends SimpleBehaviour {
-    protected final Person person;
+    protected final MyAgent agent;
     private boolean finished = false;
 
-    SendMsgBehaviour(Person p) {
-        person = p;
+    SendMsgBehaviour(MyAgent a) {
+        agent = a;
     }
 
     @Override
@@ -23,13 +23,13 @@ abstract class SendMsgBehaviour extends SimpleBehaviour {
         for (DFAgentDescription re : res) {
             try {
                 AID rcv = re.getName();
-                if (person.getLocalName().equals(rcv.getLocalName()))
+                if (agent.getLocalName().equals(rcv.getLocalName()))
                     continue;
                 ACLMessage msg = getMessage(rcv);
-                person.send(msg);
+                agent.send(msg);
             } catch (IOException e) {
-                person.logger.warning(
-                        "Agent " + person.getLocalName() + " failed to send message to " + re.getName().getLocalName());
+                agent.logger.warning(
+                        "Agent " + agent.getLocalName() + " failed to send message to " + re.getName().getLocalName());
             }
         }
 

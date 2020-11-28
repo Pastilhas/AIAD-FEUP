@@ -6,6 +6,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import agents.Person.Phase;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -17,12 +18,14 @@ public abstract class MyAgent extends Agent {
     public final Logger logger;
     protected final DFAgentDescription dfd;
     protected final String id;
+	public Phase phase;
 
     MyAgent(String id, long time) {
         logger = Logger.getLogger(id);
         setupLogger(time);
         dfd = new DFAgentDescription();
         this.id = id;
+        phase = Phase.INIT;
     }
 
     public String getId() {

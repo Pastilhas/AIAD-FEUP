@@ -1,24 +1,27 @@
 package behaviours;
 
-import agents.Person;
+import agents.MyAgent;
 import jade.lang.acl.ACLMessage;
 import sajas.core.behaviours.CyclicBehaviour;
 
 public class ReceiveMsgBehaviour extends CyclicBehaviour {
-    protected final Person person;
+    protected final MyAgent agent;
 
-    public ReceiveMsgBehaviour(Person p) {
-        person = p;
+    public ReceiveMsgBehaviour(MyAgent a) {
+        agent = a;
     }
 
     @Override
     public void action() {
-        ACLMessage msg = person.receive();
+        ACLMessage msg = agent.receive();
         if (msg != null) {
-            if (msg.getSender().getLocalName().startsWith("audience")) {
-                person.parseAudienceMsg(msg);
-            } else if (msg.getSender().getLocalName().startsWith("competitor")) {
-                person.parseCompetitorMsg(msg);
+            String sender = msg.getSender().getLocalName();
+            if (sender.startsWith("audience")) {
+                agent.parseAudienceMsg(msg);
+            } else if (sender.startsWith("competitor")) {
+                agent.parseCompetitorMsg(msg);
+            } else if (sender.startsWith("world")) {
+                agent.parseWorldMsg(msg);
             }
         } else {
             block();

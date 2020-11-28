@@ -6,7 +6,6 @@ import java.util.Random;
 
 import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
-import behaviours.ReceiveMsgBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
@@ -25,7 +24,6 @@ public class Audience extends Person {
     @Override
     protected void setup() {
         setupAgent("audience");
-        addBehaviour(new ReceiveMsgBehaviour(this));
     }
 
     @Override
@@ -53,7 +51,7 @@ public class Audience extends Person {
             int p = itemPrice.get(item);
             guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
         } else {
-            guess = rnd.nextInt(1555);
+            guess = rnd.nextInt(world.WorldModel.MAX_PRICE);
         }
         phase = Phase.SHARE;
         addBehaviour(new AudienceShareGuess(this));

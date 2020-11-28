@@ -15,15 +15,15 @@ public class AudienceSendGuess extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (person.phase != Phase.SEND)
+        if (agent.phase != Phase.SEND)
             return;
         super.action();
-        person.phase = Phase.READY;
+        agent.phase = Phase.READY;
     }
 
     @Override
     protected ACLMessage getMessage(AID rcv) throws IOException {
-        Audience p = (Audience) person;
+        Audience p = (Audience) agent;
         int performative;
         if (p.getGuess(rcv.getLocalName()) == null)
             performative = ACLMessage.REFUSE;
@@ -32,13 +32,13 @@ public class AudienceSendGuess extends SendMsgBehaviour {
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getGuess(rcv.getLocalName()));
         msg.addReceiver(rcv);
-        person.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO   %10s", person.getLocalName(),
+        agent.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO   %10s", agent.getLocalName(),
                 p.getGuess(rcv.getLocalName()), rcv.getLocalName()));
         return msg;
     }
 
     @Override
     protected DFAgentDescription[] chooseReceivers() {
-        return person.getCompetitor();
+        return agent.getCompetitor();
     }
 }

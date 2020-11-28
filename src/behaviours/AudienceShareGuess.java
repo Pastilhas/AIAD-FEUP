@@ -15,26 +15,26 @@ public class AudienceShareGuess extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (person.phase != Phase.SHARE)
+        if (agent.phase != Phase.SHARE)
             return;
         super.action();
-        person.phase = Phase.WAIT;
+        agent.phase = Phase.WAIT;
     }
 
     @Override
     protected ACLMessage getMessage(AID rcv) throws IOException {
-        Audience p = (Audience) person;
+        Audience p = (Audience) agent;
         int performative = ACLMessage.INFORM;
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getGuess(null));
         msg.addReceiver(rcv);
-        person.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO   %10s", person.getLocalName(),
+        agent.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO   %10s", agent.getLocalName(),
                 p.getGuess(null), rcv.getLocalName()));
         return msg;
     }
 
     @Override
     protected DFAgentDescription[] chooseReceivers() {
-        return person.getAudience();
+        return agent.getAudience();
     }
 }

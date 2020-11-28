@@ -1,7 +1,6 @@
 package agents;
 
 import behaviours.CompetitorSendRequest;
-import behaviours.ReceiveMsgBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
@@ -14,7 +13,6 @@ public class Competitor extends Person {
     @Override
     protected void setup() {
         setupAgent("competitor");
-        addBehaviour(new ReceiveMsgBehaviour(this));
     }
 
     @Override
@@ -46,7 +44,7 @@ public class Competitor extends Person {
 
     @Override
     public void parseCompetitorMsg(ACLMessage msg) {
-        System.err.println("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
+        logger.warning("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
     }
 
     @Override

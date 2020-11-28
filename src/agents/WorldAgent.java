@@ -1,41 +1,76 @@
 package agents;
 
+import java.util.HashMap;
+
+import agents.Person.Phase;
+import behaviours.ReceiveMsgBehaviour;
+import behaviours.WorldSendEnd;
+import behaviours.WorldSendStart;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import sajas.core.Agent;
+import jade.lang.acl.ACLMessage;
 import sajas.domain.DFService;
+import world.WorldModel;
 
-public class WorldAgent extends Agent {
-    WorldAgent() {
+public class WorldAgent extends MyAgent {
+    private final WorldModel world;
+    private String item_id;
+    private Integer item_price;
+    private final HashMap<String, Integer> comps;
 
+    public WorldAgent(String id, long time, WorldModel world) {
+        super(id, time);
+        this.world = world;
+        comps = new HashMap<>();
     }
 
     @Override
     protected void setup() {
-
+        addBehaviour(new ReceiveMsgBehaviour(this));
+        startRound();
     }
 
-    public DFAgentDescription[] getCompetitor() {
-        return getService("competitor");
+    private void startRound() {
+        comps.clear();
+        String[] a = world.startRound();
+        item_id = a[0];
+        item_price = Integer.valueOf(a[1]);
+        addBehaviour(new WorldSendStart(this));
     }
 
-    public DFAgentDescription[] getAudience() {
-        return getService("audience");
+    private void endRound() {
+        world.endRound();
+        addBehaviour(new WorldSendEnd(this));
     }
 
-    DFAgentDescription[] getService(String type) {
-        DFAgentDescription[] res = null;
-        try {
-            DFAgentDescription dfd = new DFAgentDescription();
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType(type);
-            dfd.addServices(sd);
-            res = DFService.search(this, dfd);
-        } catch (FIPAException e) {
-            e.printStackTrace();
-            System.exit(3);
+	public String getItem() {
+		return item_id;
+	}
+
+	public Integer getPrice() {
+		return item_price;
+	}
+
+    @Override
+    public void parseAudienceMsg(ACLMessage msg) {
+        logger.warning("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
+    }
+
+    @Override
+    public void parseCompetitorMsg(ACLMessage msg) {
+        String sender = msg.getSender().getLocalName();
+        Integer content = Integer.valueOf(msg.getContent());
+        comps.put(sender, content);
+
+        if (getCompetitor().length <= comps.size()) {
+            phase = Phase.SEND;
+            endRound();
         }
-        return res;
+    }
+
+    @Override
+    public void parseWorldMsg(ACLMessage msg) {
+        logger.warning("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
     }
 }
