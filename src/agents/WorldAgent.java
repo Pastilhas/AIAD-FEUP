@@ -2,15 +2,10 @@ package agents;
 
 import java.util.HashMap;
 
-import agents.Person.Phase;
-import behaviours.ReceiveMsgBehaviour;
 import behaviours.WorldSendEnd;
 import behaviours.WorldSendStart;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
-import sajas.domain.DFService;
+import jade.lang.acl.UnreadableException;
 import world.WorldModel;
 
 public class WorldAgent extends MyAgent {
@@ -27,11 +22,11 @@ public class WorldAgent extends MyAgent {
 
     @Override
     protected void setup() {
-        addBehaviour(new ReceiveMsgBehaviour(this));
+        setupAgent("world");
         startRound();
     }
 
-    private void startRound() {
+    public void startRound() {
         comps.clear();
         String[] a = world.startRound();
         item_id = a[0];
@@ -40,28 +35,37 @@ public class WorldAgent extends MyAgent {
     }
 
     private void endRound() {
-        world.endRound();
         addBehaviour(new WorldSendEnd(this));
+        world.endRound();
     }
 
-	public String getItem() {
-		return item_id;
-	}
+    public String getItem() {
+        return item_id;
+    }
 
-	public Integer getPrice() {
-		return item_price;
-	}
+    public Integer getPrice() {
+        return item_price;
+    }
+
+    public boolean hasEnded() {
+        return phase == Phase.INIT && world.isEnd();
+    }
 
     @Override
     public void parseAudienceMsg(ACLMessage msg) {
-        logger.warning("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
+        System.err.println("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
     }
 
     @Override
     public void parseCompetitorMsg(ACLMessage msg) {
         String sender = msg.getSender().getLocalName();
-        Integer content = Integer.valueOf(msg.getContent());
-        comps.put(sender, content);
+        try {
+            Integer content = (Integer) msg.getContentObject();
+            logger.info(String.format("RECEIVED GUESS %7d FROM %10s", content, sender));
+            comps.put(sender, content);
+        } catch (UnreadableException e) {
+            e.printStackTrace();
+        }
 
         if (getCompetitor().length <= comps.size()) {
             phase = Phase.SEND;
@@ -71,6 +75,6 @@ public class WorldAgent extends MyAgent {
 
     @Override
     public void parseWorldMsg(ACLMessage msg) {
-        logger.warning("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
+        System.err.println("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
     }
 }

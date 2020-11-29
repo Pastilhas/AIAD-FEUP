@@ -1,13 +1,21 @@
 package world;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.FileHandler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import agents.Audience;
 import agents.Competitor;
+import agents.MyAgent.Phase;
+import agents.Person;
 import agents.WorldAgent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -15,22 +23,20 @@ import jade.wrapper.StaleProxyException;
 import sajas.core.Runtime;
 import sajas.sim.repast3.Repast3Launcher;
 import sajas.wrapper.ContainerController;
-import uchicago.src.sim.analysis.OpenSequenceGraph;
-import uchicago.src.sim.analysis.Sequence;
 import uchicago.src.sim.engine.SimInit;
 
 public class WorldModel extends Repast3Launcher {
-    private final static Logger LOGGER = Logger.getLogger("world");
+    private final static Logger LOGGER = Logger.getLogger("worldModel");
 
-	public static final int MAX_PRICE = 15000;
+    private static final boolean BATCH_MODE = true;
     private static final float HIGH_CONFIDENCE = 9999;
     private static final int MAX_TEAM = 100;
+    public static final int MAX_PRICE = 15000;
 
     private ContainerController cc;
     private final ArrayList<String> teams;
     protected final WorldAgent worldAgent;
     protected final WorldData worldData;
-    private OpenSequenceGraph plot;
 
     protected final ArrayList<Audience> audience;
     protected final ArrayList<Competitor> competitors;
@@ -39,10 +45,10 @@ public class WorldModel extends Repast3Launcher {
     private int nAudience;
     private int nCompetitors;
     private int nItems;
+    private int nRounds;
     private float highConfidenceRate;
-    protected int round;
 
-	private int nRounds;
+    protected int round;
 
     public WorldModel() {
         teams = new ArrayList<String>(Arrays.asList("Red", "Yellow", "Green", "Blue"));
@@ -50,12 +56,14 @@ public class WorldModel extends Repast3Launcher {
         competitors = new ArrayList<>();
         itemPrice = new HashMap<>();
 
-        nAudience = 20;
-        nCompetitors = 20;
+        nAudience = 4;
+        nCompetitors = 4;
         nItems = 20;
+        nRounds = 5;
         highConfidenceRate = 0.2f;
 
         long time = System.currentTimeMillis();
+        setupLogs(time);
         generateItems();
         generatePersons(time);
         worldAgent = new WorldAgent("world", time, this);
@@ -113,6 +121,39 @@ public class WorldModel extends Repast3Launcher {
         }
     }
 
+    private void setupLogs(long time) {
+        File directory = new File("logs/" + time);
+        if (!directory.exists()) {
+            directory.getParentFile().mkdirs();
+            directory.mkdir();
+        }
+
+        setupLogger("logs/" + time + "/worldModel.log");
+    }
+
+    private void setupLogger(String path) {
+        try {
+            LOGGER.setUseParentHandlers(false);
+            FileHandler handler = new FileHandler(path);
+            handler.setFormatter(new SimpleFormatter() {
+                private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s%n";
+                private final Date dat = new Date();
+
+                @Override
+                public String format(LogRecord record) {
+                    dat.setTime(record.getMillis());
+                    String message = formatMessage(record);
+                    return String.format(format, dat, record.getLevel().getLocalizedName(), message);
+                }
+            });
+            LOGGER.addHandler(handler);
+        } catch (IOException e) {
+            System.err.println("Exception thrown while setting up world logger.");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
     private void generatePersons(long time) {
         Random rnd = new Random();
         String id = "audience_";
@@ -120,17 +161,19 @@ public class WorldModel extends Repast3Launcher {
         Competitor c;
         int max;
 
-        for(int i = 0; i < nAudience; i++) {
-            if(rnd.nextFloat() < highConfidenceRate) a = new Audience(id+i, rnd.nextFloat(), time);
-            else a = new Audience(id+i, HIGH_CONFIDENCE, time);
+        for (int i = 0; i < nAudience; i++) {
+            if (rnd.nextFloat() < highConfidenceRate)
+                a = new Audience(id + i, rnd.nextFloat(), time);
+            else
+                a = new Audience(id + i, HIGH_CONFIDENCE, time);
             max = rnd.nextInt(nItems);
-            
-            for(int j = 0; j < max; j++) {
+
+            for (int j = 0; j < max; j++) {
                 String item = Integer.toString(rnd.nextInt(nItems));
                 a.addItem(item, itemPrice.get(item));
             }
 
-            for(String t : teams) {
+            for (String t : teams) {
                 int ta = rnd.nextInt(MAX_TEAM + 1);
                 a.addTeam(t, ta);
             }
@@ -139,10 +182,10 @@ public class WorldModel extends Repast3Launcher {
         }
 
         id = "competitor_";
-        for(int i = 0; i < nCompetitors; i++) {
-            c = new Competitor(id+i, time);
+        for (int i = 0; i < nCompetitors; i++) {
+            c = new Competitor(id + i, time);
 
-            for(String t : teams) {
+            for (String t : teams) {
                 int ta = rnd.nextInt(MAX_TEAM + 1);
                 c.addTeam(t, ta);
             }
@@ -160,12 +203,20 @@ public class WorldModel extends Repast3Launcher {
 
     public void endRound() {
         worldData.newRound();
-        if(round >= nRounds) {
-            reset();
-            worldData.newTry();
-        }
+        round++;
+        worldAgent.startRound();
     }
-    
+
+    public boolean isEnd() {
+        for(Person p : competitors) 
+            if(p.phase != Phase.INIT)
+                return false;
+        for(Person p : audience) 
+            if(p.phase != Phase.INIT)
+                return false;
+        return true;
+    }
+
     private void reset() {
         try {
             cc.kill();
@@ -173,8 +224,9 @@ public class WorldModel extends Repast3Launcher {
             audience.clear();
             competitors.clear();
             itemPrice.clear();
-            
+
             long time = System.currentTimeMillis();
+            setupLogs(time);
             generateItems();
             generatePersons(time);
 
@@ -248,19 +300,10 @@ public class WorldModel extends Repast3Launcher {
     @Override
     public void begin() {
         super.begin();
-        if (plot != null)
-            plot.dispose();
-        plot.setAxisTitles("time", "n");
-        plot.addSequence("Accuracy", new Sequence() {
-            public double getSValue() {
-                return 0;   //
-            }
-        });
-        plot.display();
     }
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
-        init.loadModel(new WorldModel(), null, true);
+        init.loadModel(new WorldModel(), null, BATCH_MODE);
     }
 }

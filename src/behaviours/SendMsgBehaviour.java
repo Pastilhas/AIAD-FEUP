@@ -9,6 +9,8 @@ import jade.lang.acl.ACLMessage;
 import sajas.core.behaviours.SimpleBehaviour;
 
 abstract class SendMsgBehaviour extends SimpleBehaviour {
+    private static final long serialVersionUID = -723156319697606158L;
+    
     protected final MyAgent agent;
     private boolean finished = false;
 
@@ -28,8 +30,7 @@ abstract class SendMsgBehaviour extends SimpleBehaviour {
                 ACLMessage msg = getMessage(rcv);
                 agent.send(msg);
             } catch (IOException e) {
-                agent.logger.warning(
-                        "Agent " + agent.getLocalName() + " failed to send message to " + re.getName().getLocalName());
+                System.err.println("Agent " + agent.getLocalName() + " failed to send message to " + re.getName().getLocalName());
             }
         }
 

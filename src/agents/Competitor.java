@@ -1,5 +1,6 @@
 package agents;
 
+import behaviours.CompetitorSendGuess;
 import behaviours.CompetitorSendRequest;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
@@ -27,24 +28,26 @@ public class Competitor extends Person {
     @Override
     public void parseAudienceMsg(ACLMessage msg) {
         String sender = msg.getSender().getLocalName();
+
         try {
             Integer content = (Integer) msg.getContentObject();
+            logger.info(String.format("RECEIVED GUESS %7d FROM %10s", content, sender));
             receiveGuess(sender, content);
-
         } catch (UnreadableException e) {
-            logger.severe("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
+            System.err.println("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
             e.printStackTrace();
         }
 
         if (getAudience().length <= guesses.size()) {
             finalGuess();
             phase = Phase.READY;
+            addBehaviour(new CompetitorSendGuess(this));
         }
     }
 
     @Override
     public void parseCompetitorMsg(ACLMessage msg) {
-        logger.warning("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
+        System.err.println("Unexpected message from " + msg.getSender().getLocalName() + " to " + getLocalName());
     }
 
     @Override

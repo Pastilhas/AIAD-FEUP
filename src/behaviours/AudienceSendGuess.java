@@ -3,12 +3,14 @@ package behaviours;
 import java.io.IOException;
 
 import agents.Audience;
-import agents.Person.Phase;
+import agents.MyAgent.Phase;
 import jade.core.AID;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 public class AudienceSendGuess extends SendMsgBehaviour {
+    private static final long serialVersionUID = 7989267590951846547L;
+
     public AudienceSendGuess(Audience a) {
         super(a);
     }
@@ -32,8 +34,7 @@ public class AudienceSendGuess extends SendMsgBehaviour {
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getGuess(rcv.getLocalName()));
         msg.addReceiver(rcv);
-        agent.logger.info(String.format("AUDIENCE   %10s SENT GUESS     %7d TO   %10s", agent.getLocalName(),
-                p.getGuess(rcv.getLocalName()), rcv.getLocalName()));
+        agent.logger.info(String.format("SENT GUESS %11d TO %14s", p.getGuess(rcv.getLocalName()), rcv.getLocalName()));
         return msg;
     }
 

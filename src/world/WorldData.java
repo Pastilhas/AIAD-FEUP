@@ -16,40 +16,42 @@ public class WorldData {
     }
 
     public void newRound() {
-        putGuesses();
-        putWinner();
+        /*
+         * putGuesses(); putWinner();
+         */
     }
-    
-	public void newTry() {
-    }
-    
+
     private void putGuesses() {
         Integer min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
         int price = world.worldAgent.getPrice();
-        for(Competitor c : world.competitors) {
+        for (Competitor c : world.competitors) {
             Integer g = c.getGuess();
-            if(g == null) continue;
+            if (g == null)
+                continue;
             g = g - price;
-            if(g < min) min = g;
-            if(g > max) max = g;
+            if (g < min)
+                min = g;
+            if (g > max)
+                max = g;
         }
-        guesses.put(world.round, new Integer[]{min,max});
+        guesses.put(world.round, new Integer[] { min, max });
     }
 
     private void putWinner() {
         String winner = null;
         Integer min = Integer.MAX_VALUE;
         int price = world.worldAgent.getPrice();
-        for(Competitor c : world.competitors) {
+        for (Competitor c : world.competitors) {
             Integer g = c.getGuess();
-            if(g == null) continue;
+            if (g == null)
+                continue;
             g = g - price;
-            if(g < min) {
+            if (g < min) {
                 min = g;
                 winner = c.getLocalName();
             }
         }
-        
+
         winners.merge(winner, 1, Integer::sum);
     }
 }
