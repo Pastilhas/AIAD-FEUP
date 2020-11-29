@@ -6,7 +6,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import agents.Person.Phase;
+import behaviours.ReceiveMsgBehaviour;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -15,6 +15,10 @@ import sajas.core.Agent;
 import sajas.domain.DFService;
 
 public abstract class MyAgent extends Agent {
+    public enum Phase {
+        INIT, WAIT, READY, SHARE, WAIT2, SEND
+    };
+
     public final Logger logger;
     protected final DFAgentDescription dfd;
     protected final String id;
@@ -22,9 +26,9 @@ public abstract class MyAgent extends Agent {
 
     MyAgent(String id, long time) {
         logger = Logger.getLogger(id);
-        setupLogger(time);
         dfd = new DFAgentDescription();
         this.id = id;
+        setupLogger(time);
         phase = Phase.INIT;
     }
 
@@ -76,7 +80,7 @@ public abstract class MyAgent extends Agent {
             dfd.addServices(sd);
             res = DFService.search(this, dfd);
         } catch (FIPAException e) {
-            logger.severe("Exception thrown while getting service " + type);
+            System.err.println("Exception thrown while getting service " + type);
             e.printStackTrace();
             System.exit(3);
         }
@@ -84,6 +88,7 @@ public abstract class MyAgent extends Agent {
     }
 
     protected void setupAgent(String type) {
+        addBehaviour(new ReceiveMsgBehaviour(this));
         try {
             ServiceDescription sd = new ServiceDescription();
             sd.setType(type);
@@ -92,7 +97,7 @@ public abstract class MyAgent extends Agent {
             dfd.addServices(sd);
             DFService.register(this, dfd);
         } catch (FIPAException e) {
-            logger.severe("Exception thrown while setting up " + id);
+            System.err.println("Exception thrown while setting up " + id);
             e.printStackTrace();
             System.exit(3);
         }

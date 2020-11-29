@@ -5,6 +5,8 @@ import jade.lang.acl.ACLMessage;
 import sajas.core.behaviours.CyclicBehaviour;
 
 public class ReceiveMsgBehaviour extends CyclicBehaviour {
+    private static final long serialVersionUID = -7489744352564982942L;
+    
     protected final MyAgent agent;
 
     public ReceiveMsgBehaviour(MyAgent a) {

@@ -7,18 +7,10 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
-import behaviours.ReceiveMsgBehaviour;
-import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
-import sajas.domain.DFService;
 
 public abstract class Person extends MyAgent {
-    public enum Phase {
-        INIT, WAIT, READY, SHARE, WAIT2, SEND
-    };
-
     protected final HashMap<String, Integer> teamAffinity;
     protected final HashMap<String, Integer> guesses;
     protected final HashMap<String, Float> confidence;

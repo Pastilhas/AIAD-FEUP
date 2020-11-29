@@ -54,7 +54,6 @@ public class Audience extends Person {
             guess = rnd.nextInt(world.WorldModel.MAX_PRICE);
         }
         phase = Phase.SHARE;
-        addBehaviour(new AudienceShareGuess(this));
     }
 
     public void addItem(String id, Integer value) {
@@ -85,13 +84,14 @@ public class Audience extends Person {
         String sender = msg.getSender().getLocalName();
         try {
             Integer content = (Integer) msg.getContentObject();
+            logger.info(String.format("RECEIVED GUESS %7s FROM %10s", content, sender));
             receiveGuess(sender, content);
         } catch (UnreadableException e) {
-            logger.severe("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
+            System.err.println("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
             e.printStackTrace();
         }
 
-        if (getAudience().length <= guesses.size()) {
+        if (getAudience().length - 1 <= guesses.size()) {
             finalGuess();
             if (getCompetitor().length <= compatibility.size()) {
                 phase = Phase.SEND;
@@ -106,10 +106,10 @@ public class Audience extends Person {
         String sender = msg.getSender().getLocalName();
         try {
             HashMap<String, Integer> map = (HashMap<String, Integer>) msg.getContentObject();
-            logger.info(String.format("AUDIENCE   %10s RECEIVED REQUEST       FROM %10s", getLocalName(), sender));
+            logger.info(String.format("RECEIVED REQUEST FROM %10s", sender));
             checkCompetitor(sender, map);
         } catch (UnreadableException e) {
-            logger.severe("Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
+            System.err.println("Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
             e.printStackTrace();
         }
         if (phase == Phase.WAIT2 && getCompetitor().length <= compatibility.size()) {
@@ -121,6 +121,7 @@ public class Audience extends Person {
     @Override
     protected void startRound(String item_id) {
         initialGuess(item_id);
+        addBehaviour(new AudienceShareGuess(this));
     }
 
     @Override

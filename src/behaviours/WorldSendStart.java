@@ -1,24 +1,26 @@
 package behaviours;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import agents.MyAgent;
+import agents.MyAgent.Phase;
 import agents.WorldAgent;
-import agents.Person.Phase;
 import jade.core.AID;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 public class WorldSendStart extends SendMsgBehaviour {
+    private static final long serialVersionUID = -232672649672997121L;
+
     public WorldSendStart(MyAgent a) {
         super(a);
     }
 
     @Override
     public void action() {
-        if (agent.phase != Phase.INIT)
+        if (!((WorldAgent) agent).hasEnded())
             return;
         super.action();
         agent.phase = Phase.WAIT;
@@ -36,10 +38,11 @@ public class WorldSendStart extends SendMsgBehaviour {
 
     @Override
     protected DFAgentDescription[] chooseReceivers() {
-        List<DFAgentDescription> aud = Arrays.asList(agent.getAudience());
-        List<DFAgentDescription> cmp = Arrays.asList(agent.getCompetitor());
+        ArrayList<DFAgentDescription> aud = new ArrayList<DFAgentDescription>(Arrays.asList(agent.getAudience()));
+        ArrayList<DFAgentDescription> cmp = new ArrayList<DFAgentDescription>(Arrays.asList(agent.getCompetitor()));
         aud.addAll(cmp);
-        return (DFAgentDescription[]) aud.toArray();
+        DFAgentDescription[] arr = new DFAgentDescription[aud.size()];
+        arr = aud.toArray(arr);
+        return arr;
     }
-
 }
