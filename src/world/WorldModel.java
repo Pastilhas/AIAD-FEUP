@@ -28,7 +28,6 @@ import uchicago.src.sim.engine.SimInit;
 public class WorldModel extends Repast3Launcher {
     private final static Logger LOGGER = Logger.getLogger("worldModel");
 
-    private static final boolean BATCH_MODE = true;
     private static final float HIGH_CONFIDENCE = 9999;
     private static final int MAX_TEAM = 100;
     public static final int MAX_PRICE = 15000;
@@ -45,7 +44,6 @@ public class WorldModel extends Repast3Launcher {
     private int nAudience;
     private int nCompetitors;
     private int nItems;
-    private int nRounds;
     private float highConfidenceRate;
 
     protected int round;
@@ -59,7 +57,6 @@ public class WorldModel extends Repast3Launcher {
         nAudience = 4;
         nCompetitors = 4;
         nItems = 20;
-        nRounds = 5;
         highConfidenceRate = 0.2f;
 
         long time = System.currentTimeMillis();
@@ -68,14 +65,6 @@ public class WorldModel extends Repast3Launcher {
         generatePersons(time);
         worldAgent = new WorldAgent("world", time, this);
         worldData = new WorldData(this);
-    }
-
-    public int getnRounds() {
-        return nRounds;
-    }
-
-    public void setnRounds(int nRounds) {
-        this.nRounds = nRounds;
     }
 
     public float getHighConfidenceRate() {
@@ -217,28 +206,9 @@ public class WorldModel extends Repast3Launcher {
         return true;
     }
 
-    private void reset() {
-        try {
-            cc.kill();
-
-            audience.clear();
-            competitors.clear();
-            itemPrice.clear();
-
-            long time = System.currentTimeMillis();
-            setupLogs(time);
-            generateItems();
-            generatePersons(time);
-
-            launchJADE();
-        } catch (StaleProxyException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public String[] getInitParam() {
-        return new String[] { "nRounds", "nAudience", "nCompetitors", "nItems", "highConfidenceRate" };
+        return new String[] { "nAudience", "nCompetitors", "nItems", "highConfidenceRate" };
     }
 
     @Override
@@ -292,6 +262,13 @@ public class WorldModel extends Repast3Launcher {
         }
     }
 
+    private void parseParams(String[] args) {
+        try { int x = Integer.parseInt(args[1]); nAudience = x;  } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
+        try { int x = Integer.parseInt(args[2]); nCompetitors = x;  } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
+        try { int x = Integer.parseInt(args[3]); nItems = x;  } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
+        try { float x = Float.parseFloat(args[5]); highConfidenceRate = x;  } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
+    }
+
     @Override
     public void setup() {
         super.setup();
@@ -304,6 +281,13 @@ public class WorldModel extends Repast3Launcher {
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
-        init.loadModel(new WorldModel(), null, BATCH_MODE);
+        try {
+            boolean x = Boolean.parseBoolean(args[0]);
+            if(x) init.loadModel(new WorldModel(), null, true);
+        } catch (Exception e) {}
+
+        WorldModel model = new WorldModel();
+        model.parseParams(args);
+        init.loadModel(model, null, true);
     }
 }

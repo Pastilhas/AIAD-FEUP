@@ -33,10 +33,10 @@ To run this project you need to download the JADE framework.
 
 Then, compile the project with:
     
-    javac -d "out/" -sourcepath "src/" -cp "path/to/jade.jar" src/world/World.java
+    javac -d "./out/" -sourcepath "./src/" -cp "./lib/jade/lib/jade.jar;./lib/repast/repast.jar;./lib/sajas/lib/sajas.jar" ./src/world/WorldModel.java
 With the class files generated, now run:
     
-    java -cp "out/;path/to/jade.jar" world.World <nAudience> <nCompetitors> <nItems> <highConfidenceRate> <tries> <rounds>
+    java -cp "./out;./lib/jade/lib/jade.jar;./lib/repast/repast.jar;./lib/sajas/lib/sajas.jar" world.WorldModel
 
 ### Possible errors
 Some errors you might run into:
