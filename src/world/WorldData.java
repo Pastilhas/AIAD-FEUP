@@ -7,9 +7,9 @@ import agents.Competitor;
 public class WorldData {
     private final HashMap<String, Integer> winners;
     private final HashMap<Integer, Integer[]> guesses;
-    private WorldModel world;
+    private World world;
 
-    public WorldData(WorldModel world) {
+    public WorldData(World world) {
         this.world = world;
         winners = new HashMap<>();
         guesses = new HashMap<>();
@@ -23,8 +23,8 @@ public class WorldData {
 
     private void putGuesses() {
         Integer min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
-        int price = world.worldAgent.getPrice();
-        for (Competitor c : world.competitors) {
+        int price = world.getPrice();
+        for (Competitor c : world.getCompetitors()) {
             Integer g = c.getGuess();
             if (g == null)
                 continue;
@@ -34,14 +34,14 @@ public class WorldData {
             if (g > max)
                 max = g;
         }
-        guesses.put(world.round, new Integer[] { min, max });
+        guesses.put(world.getRound(), new Integer[] { min, max });
     }
 
     private void putWinner() {
         String winner = null;
         Integer min = Integer.MAX_VALUE;
-        int price = world.worldAgent.getPrice();
-        for (Competitor c : world.competitors) {
+        int price = world.getPrice();
+        for (Competitor c : world.getCompetitors()) {
             Integer g = c.getGuess();
             if (g == null)
                 continue;

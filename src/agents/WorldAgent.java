@@ -6,18 +6,18 @@ import behaviours.WorldSendEnd;
 import behaviours.WorldSendStart;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
-import world.WorldModel;
+import world.World;
 
 public class WorldAgent extends MyAgent {
-    private final WorldModel world;
+    private final World world;
+    private final HashMap<String, Integer> comps = new HashMap<>();
+
     private String item_id;
     private Integer item_price;
-    private final HashMap<String, Integer> comps;
 
-    public WorldAgent(String id, long time, WorldModel world) {
+    public WorldAgent(String id, long time, World world) {
         super(id, time);
         this.world = world;
-        comps = new HashMap<>();
     }
 
     @Override

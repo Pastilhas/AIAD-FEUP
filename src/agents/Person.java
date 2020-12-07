@@ -12,17 +12,17 @@ import draw.AgentEdge;
 import draw.AgentNode;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
-import world.WorldModel;
+import world.World;
 
 public abstract class Person extends MyAgent {
     protected final HashMap<String, Integer> teamAffinity;
     protected final HashMap<String, Integer> guesses;
     protected final HashMap<String, Float> confidence;
     protected final AgentNode node;
-    private final WorldModel world;
+    private final World world;
     Integer guess;
 
-    Person(String id, long time, WorldModel world, Color color, int x, int y) {
+    Person(String id, long time, World world, Color color, int x, int y) {
         super(id, time);
 
         teamAffinity = new HashMap<>();

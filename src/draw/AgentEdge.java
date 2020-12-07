@@ -10,7 +10,7 @@ public class AgentEdge extends DefaultDrawableEdge {
     private Color color;
     private String string = "";
     private int x, y;
-    
+
     public AgentEdge(AgentNode from, AgentNode to) {
         super(from, to);
         Random rnd = new Random();
@@ -24,7 +24,7 @@ public class AgentEdge extends DefaultDrawableEdge {
         g.drawDirectedLink(color, fromX, toX, fromY, toY);
         g.getGraphics().drawString(string, x, y);
     }
-    
+
     public void setColor(Color color) {
         this.color = color;
     }

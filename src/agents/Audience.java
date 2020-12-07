@@ -9,14 +9,14 @@ import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
-import world.WorldModel;
+import world.World;
 
 public class Audience extends Person {
     private final HashMap<String, Integer> itemPrice;
     private final HashMap<String, Boolean> compatibility;
     private final float selfconfidence;
 
-    public Audience(String id, long time, WorldModel world, float selfconfidence, Color color, int x, int y) {
+    public Audience(String id, long time, World world, float selfconfidence, Color color, int x, int y) {
         super(id, time, world, color, x, y);
         this.selfconfidence = selfconfidence;
         itemPrice = new HashMap<>();
@@ -53,7 +53,7 @@ public class Audience extends Person {
             int p = itemPrice.get(item);
             guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
         } else {
-            guess = rnd.nextInt(world.WorldModel.MAX_PRICE);
+            guess = rnd.nextInt(world.World.MAX_PRICE);
         }
         phase = Phase.SHARE;
     }
@@ -111,7 +111,8 @@ public class Audience extends Person {
             logger.info(String.format("RECEIVED REQUEST FROM %10s", sender));
             checkCompetitor(sender, map);
         } catch (UnreadableException e) {
-            System.err.println("Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
+            System.err.println(
+                    "Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
             e.printStackTrace();
         }
         if (phase == Phase.WAIT2 && getCompetitor().length <= compatibility.size()) {

@@ -6,11 +6,11 @@ import behaviours.CompetitorSendGuess;
 import behaviours.CompetitorSendRequest;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
-import world.WorldModel;
+import world.World;
 
 public class Competitor extends Person {
 
-    public Competitor(String id, long time, WorldModel world, Color color, int x, int y) {
+    public Competitor(String id, long time, World world, Color color, int x, int y) {
         super(id, time, world, color, x, y);
     }
 
