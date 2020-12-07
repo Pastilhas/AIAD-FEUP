@@ -52,6 +52,7 @@ public class WorldModel extends Repast3Launcher {
     private int nAudience;
     private int nCompetitors;
     private int nItems;
+    private int nRounds;
     private float highConfidenceRate;
 
     protected int round;
@@ -66,6 +67,7 @@ public class WorldModel extends Repast3Launcher {
         nAudience = 4;
         nCompetitors = 4;
         nItems = 20;
+        nRounds = 5;
         highConfidenceRate = 0.2f;
 
         long time = System.currentTimeMillis();
