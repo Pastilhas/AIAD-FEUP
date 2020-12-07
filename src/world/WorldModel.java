@@ -41,8 +41,8 @@ public class WorldModel extends Repast3Launcher {
 
     private ContainerController cc;
     private final ArrayList<String> teams;
-    protected final WorldAgent worldAgent;
-    protected final WorldData worldData;
+    protected WorldAgent worldAgent;
+    protected WorldData worldData;
 	private DisplaySurface dsurf;
 
     protected final ArrayList<Audience> audience;
@@ -52,7 +52,6 @@ public class WorldModel extends Repast3Launcher {
     private int nAudience;
     private int nCompetitors;
     private int nItems;
-    private int nRounds;
     private float highConfidenceRate;
 
     protected int round;
@@ -67,15 +66,7 @@ public class WorldModel extends Repast3Launcher {
         nAudience = 4;
         nCompetitors = 4;
         nItems = 20;
-        nRounds = 5;
         highConfidenceRate = 0.2f;
-
-        long time = System.currentTimeMillis();
-        setupLogs(time);
-        generateItems();
-        generatePersons(time);
-        worldAgent = new WorldAgent("world", time, this);
-        worldData = new WorldData(this);
     }
 
     public float getHighConfidenceRate() {
@@ -245,7 +236,15 @@ public class WorldModel extends Repast3Launcher {
     protected void launchJADE() {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
-        cc = rt.createMainContainer(p);
+        cc = rt.createMainContainer(p); 
+
+        long time = System.currentTimeMillis();
+        setupLogs(time);
+        generateItems();
+        generatePersons(time);
+        worldAgent = new WorldAgent("world", time, this);
+        worldData = new WorldData(this);
+
         launchAgents();
     }
 
@@ -299,8 +298,8 @@ public class WorldModel extends Repast3Launcher {
         for(Competitor a : competitors) nodes.add(a.getNode());
 
 		if (dsurf != null) dsurf.dispose();
-		dsurf = new DisplaySurface(this, "Service Consumer/Provider Display");
-		registerDisplaySurface("Service Consumer/Provider Display", dsurf);
+		dsurf = new DisplaySurface(this, "Agents Display");
+		registerDisplaySurface("Agents Display", dsurf);
 		Network2DDisplay display = new Network2DDisplay(nodes,WIDTH,HEIGHT);
 		dsurf.addDisplayableProbeable(display, "Network Display");
         dsurf.addZoomable(display);
@@ -325,9 +324,9 @@ public class WorldModel extends Repast3Launcher {
 
     private void parseParams(String[] args) {
         batchMode = true;
-        try { int x = Integer.parseInt(args[1]); nAudience = x;  } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
-        try { int x = Integer.parseInt(args[2]); nCompetitors = x;  } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
-        try { int x = Integer.parseInt(args[3]); nItems = x;  } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
-        try { float x = Float.parseFloat(args[5]); highConfidenceRate = x;  } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
+        try { nAudience = Integer.parseInt(args[1]); } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
+        try { nCompetitors = Integer.parseInt(args[2]); } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
+        try { nItems = Integer.parseInt(args[3]); } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
+        try { highConfidenceRate = Float.parseFloat(args[5]); } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
     }
 }

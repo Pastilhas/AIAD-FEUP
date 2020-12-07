@@ -132,6 +132,7 @@ public class Audience extends Person {
         guess = null;
         guesses.clear();
         compatibility.clear();
+        removeEdges();
         phase = Phase.INIT;
     }
 }

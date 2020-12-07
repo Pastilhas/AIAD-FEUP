@@ -63,6 +63,7 @@ public class Competitor extends Person {
         updateConfidence(item_price);
         guess = null;
         guesses.clear();
+        removeEdges();
         phase = Phase.INIT;
     }
 }

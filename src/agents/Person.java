@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
+import draw.AgentEdge;
 import draw.AgentNode;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
@@ -126,8 +127,10 @@ public abstract class Person extends MyAgent {
         node.removeEdges();
     }
 
-    public void sendMsg(String name) {
-        node.addEdge(world.getNode(name));
+    public void addEdge(String nodeName, String label) {
+        AgentEdge e = new AgentEdge(node, world.getNode(nodeName));
+        e.setString(label);
+        node.addEdge(e);
     }
 
     public abstract void finalGuess();

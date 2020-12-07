@@ -27,10 +27,13 @@ public class AudienceSendGuess extends SendMsgBehaviour {
     protected ACLMessage getMessage(AID rcv) throws IOException {
         Audience p = (Audience) agent;
         int performative;
-        if (p.getGuess(rcv.getLocalName()) == null)
+        if (p.getGuess(rcv.getLocalName()) == null) {
+            p.addEdge(rcv.getLocalName(), "null");
             performative = ACLMessage.REFUSE;
-        else
+        } else {
+            p.addEdge(rcv.getLocalName(), p.getGuess(rcv.getLocalName()).toString());
             performative = ACLMessage.AGREE;
+        }
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getGuess(rcv.getLocalName()));
         msg.addReceiver(rcv);

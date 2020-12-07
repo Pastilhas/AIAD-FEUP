@@ -26,7 +26,7 @@ public class CompetitorSendRequest extends SendMsgBehaviour {
     @Override
     protected ACLMessage getMessage(AID rcv) throws IOException {
         Competitor p = (Competitor) agent;
-        p.sendMsg(rcv.getLocalName());
+        p.addEdge(rcv.getLocalName(), "request");
         int performative = ACLMessage.REQUEST;
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getTeam());

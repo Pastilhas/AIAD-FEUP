@@ -20,11 +20,16 @@ public class AgentNode extends DefaultDrawableNode {
         super(label, oval);
     }
 
+    public void addEdge(AgentEdge to) {
+        addOutEdge(to);
+    }
+
     public void addEdge(AgentNode to) {
-        addOutEdge(new AgentEdge(this, to));
+        AgentEdge e = new AgentEdge(this, to);
+        addOutEdge(e);
     }
 
     public void removeEdges() {
-        removeEdgesFrom(this);
+        this.outEdges.clear();
     }
 }

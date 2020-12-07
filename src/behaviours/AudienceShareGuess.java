@@ -26,6 +26,7 @@ public class AudienceShareGuess extends SendMsgBehaviour {
     @Override
     protected ACLMessage getMessage(AID rcv) throws IOException {
         Audience p = (Audience) agent;
+        p.addEdge(rcv.getLocalName(), p.getGuess(null).toString());
         int performative = ACLMessage.INFORM;
         ACLMessage msg = new ACLMessage(performative);
         msg.setContentObject(p.getGuess(null));
