@@ -1,14 +1,17 @@
 package agents;
 
+import java.awt.Color;
+
 import behaviours.CompetitorSendGuess;
 import behaviours.CompetitorSendRequest;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import world.WorldModel;
 
 public class Competitor extends Person {
 
-    public Competitor(String id, long time) {
-        super(id, time);
+    public Competitor(String id, long time, WorldModel world, Color color, int x, int y) {
+        super(id, time, world, color, x, y);
     }
 
     @Override

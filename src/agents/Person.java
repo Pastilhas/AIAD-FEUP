@@ -1,5 +1,6 @@
 package agents;
 
+import java.awt.Color;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,22 +8,28 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
+import draw.AgentNode;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import world.WorldModel;
 
 public abstract class Person extends MyAgent {
     protected final HashMap<String, Integer> teamAffinity;
     protected final HashMap<String, Integer> guesses;
     protected final HashMap<String, Float> confidence;
+    protected final AgentNode node;
+    private final WorldModel world;
     Integer guess;
 
-    Person(String id, long time) {
+    Person(String id, long time, WorldModel world, Color color, int x, int y) {
         super(id, time);
 
         teamAffinity = new HashMap<>();
         guesses = new HashMap<>();
         confidence = new HashMap<>();
+        node = AgentNode.getNewNode(id, color, x, y);
         guess = null;
+        this.world = world;
     }
 
     public void startConfidence() {
@@ -48,6 +55,10 @@ public abstract class Person extends MyAgent {
 
     public Integer getGuess() {
         return guess;
+    }
+
+    public AgentNode getNode() {
+        return node;
     }
 
     public HashMap<String, Integer> getTeam() {
@@ -105,6 +116,18 @@ public abstract class Person extends MyAgent {
             Integer item_price = sc.nextInt();
             endRound(item_price);
         }
+    }
+
+    public void addEdge(AgentNode to) {
+        node.addEdge(to);
+    }
+
+    public void removeEdges() {
+        node.removeEdges();
+    }
+
+    public void sendMsg(String name) {
+        node.addEdge(world.getNode(name));
     }
 
     public abstract void finalGuess();

@@ -1,5 +1,6 @@
 package world;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.logging.SimpleFormatter;
 import agents.Audience;
 import agents.Competitor;
 import agents.MyAgent.Phase;
+import draw.AgentNode;
 import agents.Person;
 import agents.WorldAgent;
 import jade.core.Profile;
@@ -23,7 +25,10 @@ import jade.wrapper.StaleProxyException;
 import sajas.core.Runtime;
 import sajas.sim.repast3.Repast3Launcher;
 import sajas.wrapper.ContainerController;
+import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimInit;
+import uchicago.src.sim.gui.DisplaySurface;
+import uchicago.src.sim.gui.Network2DDisplay;
 
 public class WorldModel extends Repast3Launcher {
     private final static Logger LOGGER = Logger.getLogger("worldModel");
@@ -31,11 +36,14 @@ public class WorldModel extends Repast3Launcher {
     private static final float HIGH_CONFIDENCE = 9999;
     private static final int MAX_TEAM = 100;
     public static final int MAX_PRICE = 15000;
+    public static final int WIDTH = 800;
+    public static final int HEIGHT = 600;
 
     private ContainerController cc;
     private final ArrayList<String> teams;
     protected final WorldAgent worldAgent;
     protected final WorldData worldData;
+	private DisplaySurface dsurf;
 
     protected final ArrayList<Audience> audience;
     protected final ArrayList<Competitor> competitors;
@@ -47,6 +55,7 @@ public class WorldModel extends Repast3Launcher {
     private float highConfidenceRate;
 
     protected int round;
+    private boolean batchMode;
 
     public WorldModel() {
         teams = new ArrayList<String>(Arrays.asList("Red", "Yellow", "Green", "Blue"));
@@ -152,9 +161,9 @@ public class WorldModel extends Repast3Launcher {
 
         for (int i = 0; i < nAudience; i++) {
             if (rnd.nextFloat() < highConfidenceRate)
-                a = new Audience(id + i, rnd.nextFloat(), time);
+                a = new Audience(id + i, time, this, rnd.nextFloat(), Color.CYAN, rnd.nextInt(WIDTH/2), rnd.nextInt(HEIGHT));
             else
-                a = new Audience(id + i, HIGH_CONFIDENCE, time);
+                a = new Audience(id + i, time, this, HIGH_CONFIDENCE, Color.CYAN, rnd.nextInt(WIDTH/2), rnd.nextInt(HEIGHT));
             max = rnd.nextInt(nItems);
 
             for (int j = 0; j < max; j++) {
@@ -172,7 +181,7 @@ public class WorldModel extends Repast3Launcher {
 
         id = "competitor_";
         for (int i = 0; i < nCompetitors; i++) {
-            c = new Competitor(id + i, time);
+            c = new Competitor(id + i, time, this, Color.GREEN, WIDTH/2 + rnd.nextInt(WIDTH/2), rnd.nextInt(HEIGHT));
 
             for (String t : teams) {
                 int ta = rnd.nextInt(MAX_TEAM + 1);
@@ -206,6 +215,20 @@ public class WorldModel extends Repast3Launcher {
         return true;
     }
 
+	public AgentNode getNode(String name) {
+        if(name.startsWith("audience"))
+            for(Audience a : audience)
+                if(a.getLocalName().equals(name))
+                    return a.getNode();
+
+        if(name.startsWith("competitor"))
+            for(Competitor c : competitors)
+                if(c.getLocalName().equals(name))
+                    return c.getNode();
+
+        return null;
+    }
+    
     @Override
     public String[] getInitParam() {
         return new String[] { "nAudience", "nCompetitors", "nItems", "highConfidenceRate" };
@@ -262,32 +285,47 @@ public class WorldModel extends Repast3Launcher {
         }
     }
 
-    private void parseParams(String[] args) {
-        try { int x = Integer.parseInt(args[1]); nAudience = x;  } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
-        try { int x = Integer.parseInt(args[2]); nCompetitors = x;  } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
-        try { int x = Integer.parseInt(args[3]); nItems = x;  } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
-        try { float x = Float.parseFloat(args[5]); highConfidenceRate = x;  } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
-    }
-
-    @Override
-    public void setup() {
-        super.setup();
-    }
-
     @Override
     public void begin() {
         super.begin();
+        if(!batchMode) setupDisplay();
+    }
+
+    private void setupDisplay() {
+        ArrayList<AgentNode> nodes = new ArrayList<>();
+        for(Audience a : audience) nodes.add(a.getNode());
+        for(Competitor a : competitors) nodes.add(a.getNode());
+
+		if (dsurf != null) dsurf.dispose();
+		dsurf = new DisplaySurface(this, "Service Consumer/Provider Display");
+		registerDisplaySurface("Service Consumer/Provider Display", dsurf);
+		Network2DDisplay display = new Network2DDisplay(nodes,WIDTH,HEIGHT);
+		dsurf.addDisplayableProbeable(display, "Network Display");
+        dsurf.addZoomable(display);
+        addSimEventListener(dsurf);
+		dsurf.display();
+
+		getSchedule().scheduleActionAtInterval(1, dsurf, "updateDisplay", Schedule.LAST);
     }
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
+        WorldModel model = new WorldModel();
         try {
             boolean x = Boolean.parseBoolean(args[0]);
-            if(x) init.loadModel(new WorldModel(), null, true);
+            if(x) {
+                model.parseParams(args);
+                init.loadModel(model, null, true);
+            }
         } catch (Exception e) {}
+        init.loadModel(model, null, false);
+    }
 
-        WorldModel model = new WorldModel();
-        model.parseParams(args);
-        init.loadModel(model, null, true);
+    private void parseParams(String[] args) {
+        batchMode = true;
+        try { int x = Integer.parseInt(args[1]); nAudience = x;  } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
+        try { int x = Integer.parseInt(args[2]); nCompetitors = x;  } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
+        try { int x = Integer.parseInt(args[3]); nItems = x;  } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
+        try { float x = Float.parseFloat(args[5]); highConfidenceRate = x;  } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
     }
 }

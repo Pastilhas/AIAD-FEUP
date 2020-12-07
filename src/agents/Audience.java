@@ -1,5 +1,6 @@
 package agents;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -8,14 +9,15 @@ import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import world.WorldModel;
 
 public class Audience extends Person {
     private final HashMap<String, Integer> itemPrice;
     private final HashMap<String, Boolean> compatibility;
     private final float selfconfidence;
 
-    public Audience(String id, float selfconfidence, long time) {
-        super(id, time);
+    public Audience(String id, long time, WorldModel world, float selfconfidence, Color color, int x, int y) {
+        super(id, time, world, color, x, y);
         this.selfconfidence = selfconfidence;
         itemPrice = new HashMap<>();
         compatibility = new HashMap<>();

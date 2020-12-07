@@ -22,7 +22,7 @@ public abstract class MyAgent extends Agent {
     public final Logger logger;
     protected final DFAgentDescription dfd;
     protected final String id;
-	public Phase phase;
+    public Phase phase;
 
     MyAgent(String id, long time) {
         logger = Logger.getLogger(id);

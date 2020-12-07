@@ -1,17 +1,16 @@
 # AIAD-FEUP
 
 This repository is dedicated to the project of Agents and Distributed Artifitial Intelligence (AIAD) at Faculty of Engineering of the University of Porto (FEUP).
-Made by [João Campos](https://github.com/Pastilhas). *11/2020*
-
+Made by [João Campos](https://github.com/Pastilhas). *11/2020* 
 
 1. [Objective](#objective)
 2. [Description](#description)
 3. [First Delivery](#first-delivery)
+3. [First Delivery](#second-delivery)
 4. [To run](#to-run)
-5. [Possible Errors](#possible-errors)
 
 ## Objective
-The objective of this work is to implement communication between agents, and for this communication to affect the decisions these agents take.
+The objective of the first part of this work is to implement communication between agents, and for this communication to affect the decisions these agents take. The second part consists in adapting the previous part to use Repast3.
 
 ## Description
 The agents in this project play a version of *The Price Is Right* where there are two types of agents: audience and competitors.
@@ -28,18 +27,16 @@ The can play with any number of rounds, audience members, competitors and items.
 For the first delivery, made on 15/11/2020, the contents of the project were like on commit [3118ff6](https://github.com/Pastilhas/AIAD-FEUP/commit/3118ff611fef95e0babf14fea256b1fc7a4ceeb4). The code and report may contain errors and should not be used without previous inspection. 
 After this point starts the second delivery which consists of adapting the project using Simple API for JADE-based Simulations ([SAJaS](https://web.fe.up.pt/~hlc/doku.php?id=sajas)).
 
+## Second Delivery
+For the second delivery, 13/12/2020, the contents were like on commit [here](https://www.youtube.com/watch?v=oHg5SJYRHA0). As with the previous delivery, code should be used with care. This part of the project uses JADE, SAJaS and Repast3
+
 ## To run
 To run this project you need to download the JADE framework.
 
 Then, compile the project with:
     
-    javac -d "./out/" -sourcepath "./src/" -cp "./lib/jade/lib/jade.jar;./lib/repast/repast.jar;./lib/sajas/lib/sajas.jar" ./src/world/WorldModel.java
+>javac -d "./out/" -sourcepath "./src/" -cp "./lib/jade/lib/jade.jar;./lib/repast/repast.jar;./lib/sajas/lib/sajas.jar" ./src/world/WorldModel.java
+
 With the class files generated, now run:
     
-    java -cp "./out;./lib/jade/lib/jade.jar;./lib/repast/repast.jar;./lib/sajas/lib/sajas.jar" world.WorldModel
-
-### Possible errors
-Some errors you might run into:
- - Port 9090 must be unoccupied before running the project, either kill the process occupying it, or change the port in the code.
- - Agent(s) dying during execution. If for any reason an agent dies, the execution of the program stops.
- 
+>java -cp "./out;./lib/jade/lib/jade.jar;./lib/repast/repast.jar;./lib/sajas/lib/sajas.jar" world.WorldModel [ boolean batch [ int nAudience [ int nCompetitors [ int nItems [ float highConfidenceRate ]]]]] 
