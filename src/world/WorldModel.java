@@ -11,6 +11,8 @@ import jade.core.ProfileImpl;
 import sajas.core.Runtime;
 import sajas.sim.repast3.Repast3Launcher;
 import sajas.wrapper.ContainerController;
+import uchicago.src.sim.analysis.OpenSequenceGraph;
+import uchicago.src.sim.analysis.Sequence;
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.gui.DisplaySurface;
@@ -22,6 +24,7 @@ public class WorldModel extends Repast3Launcher {
 
     private ContainerController cc;
     private DisplaySurface dsurf;
+    private OpenSequenceGraph plot;
     private World world;
 
     private boolean batchMode;
@@ -84,6 +87,8 @@ public class WorldModel extends Repast3Launcher {
 
     @Override
     public void begin() {
+        if (world != null)
+            world.exiting();
         long time = System.currentTimeMillis();
         world = new World(time);
         paramsToFile(time);
@@ -105,7 +110,22 @@ public class WorldModel extends Repast3Launcher {
         addSimEventListener(dsurf);
         dsurf.display();
 
+        if (plot != null)
+            plot.dispose();
+        plot = new OpenSequenceGraph("Accuracy Plot", this);
+        plot.setXRange(0, 5000);
+        plot.setYRange(0, World.MAX_PRICE);
+        plot.setAxisTitles("time", "Average difference between guess and target price");
+        plot.addSequence("N", new Sequence() {
+            @Override
+            public double getSValue() {
+                return world.getPlotValue();
+            }
+        });
+        plot.display();
+
         getSchedule().scheduleActionAtInterval(1, dsurf, "updateDisplay", Schedule.LAST);
+        getSchedule().scheduleActionAtInterval(100, plot, "step", Schedule.LAST);
     }
 
     public static void main(String[] args) {
@@ -164,7 +184,7 @@ public class WorldModel extends Repast3Launcher {
             System.err.println("Error creating params file");
         }
 
-        try (FileWriter writer = new FileWriter(file);) {            
+        try (FileWriter writer = new FileWriter(file);) {
             writer.write("batchMode=" + batchMode + "\n");
             writer.write("nAudience=" + nAudience + "\n");
             writer.write("nCompetitors=" + nCompetitors + "\n");

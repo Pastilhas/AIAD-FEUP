@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import agents.Competitor;
 
 public class WorldData {
+    private Integer lastAvg;
     private final HashMap<String, Integer> winners;
     private final HashMap<Integer, Integer[]> guesses;
     private World world;
@@ -37,6 +38,7 @@ public class WorldData {
             if (g > max)
                 max = g;
         }
+        lastAvg = (max + min) / 2;
         guesses.put(world.getRound(), new Integer[] { min, max });
     }
 
@@ -92,5 +94,9 @@ public class WorldData {
         } catch (Exception e) {
             System.err.println("Error writing to data files");
         }
+    }
+
+    Integer getLastAvg() {
+        return lastAvg;
     }
 }

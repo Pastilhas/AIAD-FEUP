@@ -242,4 +242,8 @@ public class World {
         worldData.writeData(time);
         System.out.println("Bye bye...");
 	}
+
+	public double getPlotValue() {
+		return worldData.getLastAvg();
+	}
 }
