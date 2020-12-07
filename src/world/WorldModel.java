@@ -1,5 +1,8 @@
 package world;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import draw.AgentNode;
@@ -81,7 +84,9 @@ public class WorldModel extends Repast3Launcher {
 
     @Override
     public void begin() {
-        world = new World(System.currentTimeMillis());
+        long time = System.currentTimeMillis();
+        world = new World(time);
+        paramsToFile(time);
         super.begin();
         if (!batchMode)
             setupDisplay();
@@ -106,6 +111,14 @@ public class WorldModel extends Repast3Launcher {
     public static void main(String[] args) {
         SimInit init = new SimInit();
         WorldModel model = new WorldModel();
+
+        java.lang.Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                System.out.println("Exiting simulation.");
+                model.world.exiting();
+            }
+        }));
+
         try {
             boolean x = Boolean.parseBoolean(args[0]);
             if (x) {
@@ -138,6 +151,27 @@ public class WorldModel extends Repast3Launcher {
             highConfidenceRate = Float.parseFloat(args[5]);
         } catch (Exception e) {
             System.err.println("PARAMS: rate of high confidence not defined");
+        }
+    }
+
+    private void paramsToFile(long time) {
+        File file = new File("logs/" + time + "/params.log");
+
+        try {
+            if (!file.createNewFile())
+                return;
+        } catch (IOException e1) {
+            System.err.println("Error creating params file");
+        }
+
+        try (FileWriter writer = new FileWriter(file);) {            
+            writer.write("batchMode=" + batchMode + "\n");
+            writer.write("nAudience=" + nAudience + "\n");
+            writer.write("nCompetitors=" + nCompetitors + "\n");
+            writer.write("nItems=" + nItems + "\n");
+            writer.write("highConfidenceRate=" + highConfidenceRate + "\n");
+        } catch (Exception e) {
+            System.err.println("Error writing params file");
         }
     }
 }

@@ -22,7 +22,7 @@ import jade.wrapper.StaleProxyException;
 import sajas.wrapper.ContainerController;
 
 public class World {
-    private static final Logger LOGGER = Logger.getLogger("worldModel");
+    private static final Logger LOGGER = Logger.getLogger("worldMain");
     private static final float HIGH_CONFIDENCE = 9999;
     private static final int MAX_TEAM = 100;
     public static final int MAX_PRICE = 15000;
@@ -75,8 +75,7 @@ public class World {
             directory.getParentFile().mkdirs();
             directory.mkdir();
         }
-
-        setupLogger("logs/" + time + "/worldModel.log");
+        setupLogger("logs/" + time + "/worldMain.log");
     }
 
     private void setupLogger(String path) {
@@ -193,7 +192,6 @@ public class World {
     }
 
     void launch(int maxAudi, int maxComp, int maxItem, float confRate, int w, int h) {
-        setupLogs();
         generateItems(maxItem);
         generateAgents(maxAudi, maxComp, maxItem, confRate, w, h);
     }
@@ -239,4 +237,9 @@ public class World {
     public Integer getPrice() {
         return worldAgent.getPrice();
     }
+
+	public void exiting() {
+        worldData.writeData(time);
+        System.out.println("Bye bye...");
+	}
 }
