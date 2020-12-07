@@ -14,9 +14,8 @@ public class AgentEdge extends DefaultDrawableEdge {
     public AgentEdge(AgentNode from, AgentNode to) {
         super(from, to);
         Random rnd = new Random();
-        x = (int) ((to.getX() + from.getX()) / 2 + rnd.nextInt(20) - 10);
-        y = (int) ((to.getY() + from.getY()) / 2 + rnd.nextInt(20) - 10);
-        color = new Color(rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat());
+        x = (int) ((to.getX() + from.getX()) / 2 + rnd.nextInt(10) - 5);
+        y = (int) ((to.getY() + from.getY()) / 2 + rnd.nextInt(10) - 5);
     }
 
     @Override

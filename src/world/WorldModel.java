@@ -14,8 +14,8 @@ import uchicago.src.sim.gui.DisplaySurface;
 import uchicago.src.sim.gui.Network2DDisplay;
 
 public class WorldModel extends Repast3Launcher {
-    public static final int DISPLAY_WIDTH = 800;
-    public static final int DISPLAY_HEIGHT = 600;
+    public static final int DISPLAY_WIDTH = 1280;
+    public static final int DISPLAY_HEIGHT = 720;
 
     private ContainerController cc;
     private DisplaySurface dsurf;
