@@ -18,13 +18,9 @@ public class ReceiveMsgBehaviour extends CyclicBehaviour {
         ACLMessage msg = agent.receive();
         if (msg != null) {
             String sender = msg.getSender().getLocalName();
-            if (sender.startsWith("audience")) {
-                agent.parseAudienceMsg(msg);
-            } else if (sender.startsWith("competitor")) {
-                agent.parseCompetitorMsg(msg);
-            } else if (sender.startsWith("world")) {
-                agent.parseWorldMsg(msg);
-            }
+            if (sender.startsWith("audience")) agent.parseAudienceMsg(msg);
+            else if (sender.startsWith("competitor")) agent.parseCompetitorMsg(msg);
+            else if (sender.startsWith("world")) agent.parseWorldMsg(msg);
         } else {
             block();
         }

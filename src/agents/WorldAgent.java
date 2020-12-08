@@ -66,7 +66,6 @@ public class WorldAgent extends MyAgent {
         } catch (UnreadableException e) {
             e.printStackTrace();
         }
-
         if (getCompetitor().length <= comps.size()) {
             phase = Phase.SEND;
             endRound();

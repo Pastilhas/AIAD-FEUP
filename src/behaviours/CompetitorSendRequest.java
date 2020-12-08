@@ -17,8 +17,7 @@ public class CompetitorSendRequest extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (agent.phase != Phase.INIT)
-            return;
+        if (agent.phase != Phase.INIT) return;
         super.action();
         agent.phase = Phase.WAIT;
     }

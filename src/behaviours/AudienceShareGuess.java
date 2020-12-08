@@ -17,8 +17,7 @@ public class AudienceShareGuess extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (agent.phase != Phase.SHARE)
-            return;
+        if (agent.phase != Phase.SHARE) return;
         super.action();
         agent.phase = Phase.WAIT;
     }

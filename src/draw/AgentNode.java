@@ -14,7 +14,6 @@ public class AgentNode extends DefaultDrawableNode {
         oval.allowResizing(false);
         oval.setHeight(50);
         oval.setWidth(50);
-
         AgentNode a = new AgentNode(label, oval);
         a.setColor(color);
         return a;

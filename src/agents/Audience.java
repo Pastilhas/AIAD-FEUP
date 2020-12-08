@@ -2,8 +2,8 @@ package agents;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
 import behaviours.AudienceSendGuess;
 import behaviours.AudienceShareGuess;
@@ -33,34 +33,26 @@ public class Audience extends Person {
         float[] a = finalGuessCalc();
         float currentGuess = a[0];
         float maxConfidence = a[1];
-
         currentGuess += guess * selfconfidence;
         maxConfidence += selfconfidence;
-
         guess = Math.round(currentGuess / maxConfidence);
     }
 
     public Integer getGuess(String id) {
-        if (id == null || compatibility.get(id))
-            return getGuess();
-        else
-            return null;
+        if (id == null || compatibility.get(id)) return getGuess();
+        else return null;
     }
 
     void initialGuess(String item) {
         Random rnd = new Random();
-        if (itemPrice.get(item) != null) {
-            int p = itemPrice.get(item);
-            guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
-        } else {
-            guess = rnd.nextInt(world.World.MAX_PRICE);
-        }
+        Integer p = itemPrice.get(item);
+        if (p != null) guess = p + rnd.nextInt((int) (p * 0.2f)) - (int) (p * 0.1f);
+        else guess = rnd.nextInt(world.World.MAX_PRICE);
         phase = Phase.SHARE;
     }
 
     public void addItem(String id, Integer value) {
-        if (value != null)
-            itemPrice.put(id, value);
+        if (value != null) itemPrice.put(id, value);
     }
 
     public HashMap<String, Boolean> getCompatibility() {
@@ -69,16 +61,11 @@ public class Audience extends Person {
 
     public void checkCompetitor(String id, HashMap<String, Integer> map) {
         int times = 0;
-        for (Map.Entry<String, Integer> entry : teamAffinity.entrySet()) {
-            if (Math.abs(entry.getValue() - map.get(entry.getKey())) > 20) {
-                times++;
-            }
-            if (times >= 2) {
-                compatibility.put(id, false);
-                return;
-            }
-        }
         compatibility.put(id, true);
+        for (Entry<String, Integer> entry : teamAffinity.entrySet()) {
+            if (Math.abs(entry.getValue() - map.get(entry.getKey())) > 20) times++;
+            if (times >= 2) compatibility.put(id, false);
+        }
     }
 
     @Override
@@ -92,14 +79,11 @@ public class Audience extends Person {
             System.err.println("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
             e.printStackTrace();
         }
-
         if (getAudience().length - 1 <= guesses.size()) {
             finalGuess();
-            if (getCompetitor().length <= compatibility.size()) {
-                phase = Phase.SEND;
-                addBehaviour(new AudienceSendGuess(this));
-            } else
-                phase = Phase.WAIT2;
+            phase = Phase.SEND;
+            if (getCompetitor().length <= compatibility.size()) addBehaviour(new AudienceSendGuess(this));
+            else phase = Phase.WAIT2;
         }
     }
 
@@ -111,8 +95,7 @@ public class Audience extends Person {
             logger.info(String.format("RECEIVED REQUEST FROM %10s", sender));
             checkCompetitor(sender, map);
         } catch (UnreadableException e) {
-            System.err.println(
-                    "Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
+            System.err.println("Exception thrown while " + getLocalName() + " was receiving request from " + sender + ".");
             e.printStackTrace();
         }
         if (phase == Phase.WAIT2 && getCompetitor().length <= compatibility.size()) {

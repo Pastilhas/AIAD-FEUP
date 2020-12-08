@@ -17,8 +17,7 @@ public class AudienceSendGuess extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (agent.phase != Phase.SEND)
-            return;
+        if (agent.phase != Phase.SEND) return;
         super.action();
         agent.phase = Phase.READY;
     }

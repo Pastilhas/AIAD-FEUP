@@ -85,7 +85,6 @@ public class World {
             handler.setFormatter(new SimpleFormatter() {
                 private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s%n";
                 private final Date dat = new Date();
-
                 @Override
                 public String format(LogRecord record) {
                     dat.setTime(record.getMillis());
@@ -103,52 +102,41 @@ public class World {
 
     void generateItems(int maxItem) {
         Random rnd = new Random();
-        for (int i = 0; i < maxItem; i++) {
+        for (int i = 0; i < maxItem; i++)
             itemPrice.put(Integer.toString(i), rnd.nextInt(MAX_PRICE));
-        }
     }
 
     void generateAgents(int maxAudi, int maxComp, int maxItem, float confRate, int w, int h) {
         Random rnd = new Random();
-        String id = "audience_";
         Audience a;
         Competitor c;
         int max;
-
+        String id = "audience_";
         for (int i = 0; i < maxAudi; i++) {
-            if (rnd.nextFloat() < confRate)
-                a = new Audience(id + i, time, this, rnd.nextFloat(), Color.CYAN, rnd.nextInt(w / 2), rnd.nextInt(h));
-            else
-                a = new Audience(id + i, time, this, HIGH_CONFIDENCE, Color.CYAN, rnd.nextInt(w / 2), rnd.nextInt(h));
+            if (rnd.nextFloat() < confRate) a = new Audience(id + i, time, this, rnd.nextFloat(), Color.CYAN, rnd.nextInt(w / 2), rnd.nextInt(h));
+            else a = new Audience(id + i, time, this, HIGH_CONFIDENCE, Color.CYAN, rnd.nextInt(w / 2), rnd.nextInt(h));
             max = rnd.nextInt(maxItem);
-
             for (int j = 0; j < max; j++) {
                 String item = Integer.toString(rnd.nextInt(maxItem));
                 a.addItem(item, itemPrice.get(item));
             }
-
             for (String t : teams) {
                 int ta = rnd.nextInt(MAX_TEAM + 1);
                 a.addTeam(t, ta);
             }
-
             nodes.add(a.getNode());
             audience.add(a);
         }
-
         id = "competitor_";
         for (int i = 0; i < maxComp; i++) {
             c = new Competitor(id + i, time, this, Color.GREEN, w / 2 + rnd.nextInt(w / 2), rnd.nextInt(h));
-
             for (String t : teams) {
                 int ta = rnd.nextInt(MAX_TEAM + 1);
                 c.addTeam(t, ta);
             }
-
             nodes.add(c.getNode());
             competitors.add(c);
         }
-
         worldAgent = new WorldAgent("world", time, this);
     }
 
@@ -169,25 +157,17 @@ public class World {
 
     public boolean isEnd() {
         for (Competitor p : competitors)
-            if (p.phase != Phase.INIT)
-                return false;
+            if (p.phase != Phase.INIT) return false;
         for (Audience p : audience)
-            if (p.phase != Phase.INIT)
-                return false;
+            if (p.phase != Phase.INIT) return false;
         return true;
     }
 
     public AgentNode getNode(String name) {
-        if (name.startsWith("audience"))
-            for (Audience a : audience)
-                if (a.getLocalName().equals(name))
-                    return a.getNode();
-
-        if (name.startsWith("competitor"))
-            for (Competitor c : competitors)
-                if (c.getLocalName().equals(name))
-                    return c.getNode();
-
+        for (Audience a : audience)
+            if (a.getLocalName().equals(name)) return a.getNode();
+        for (Competitor c : competitors)
+            if (c.getLocalName().equals(name)) return c.getNode();
         return null;
     }
 
@@ -206,7 +186,6 @@ public class World {
                 System.exit(2);
             }
         }
-
         for (Audience a : audience) {
             try {
                 cc.acceptNewAgent(a.getId(), a).start();
@@ -216,15 +195,8 @@ public class World {
                 System.exit(2);
             }
         }
-
-        for (Competitor c : competitors) {
-            c.startConfidence();
-        }
-
-        for (Audience a : audience) {
-            a.startConfidence();
-        }
-
+        for (Competitor c : competitors) c.startConfidence();
+        for (Audience a : audience) a.startConfidence();
         try {
             cc.acceptNewAgent("world", worldAgent).start();
         } catch (StaleProxyException e) {
@@ -238,12 +210,12 @@ public class World {
         return worldAgent.getPrice();
     }
 
-	public void exiting() {
+    public void exiting() {
         worldData.writeData(time);
         System.out.println("Bye bye...");
-	}
+    }
 
-	public double getPlotValue() {
-		return worldData.getLastAvg();
-	}
+    public double getPlotValue() {
+        return worldData.getLastAvg();
+    }
 }

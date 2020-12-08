@@ -1,4 +1,7 @@
-.vscode/
-out/
-logs/
-*.txt
+**/.vscode/
+**/out/
+**/logs/
+**/*.txt
+**/*.csv
+**/*.iml
+**/.idea

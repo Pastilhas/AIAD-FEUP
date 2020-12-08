@@ -17,8 +17,7 @@ public class CompetitorSendGuess extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (agent.phase != Phase.READY)
-            return;
+        if (agent.phase != Phase.READY) return;
         super.action();
     }
 

@@ -20,8 +20,7 @@ public class WorldSendStart extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (!((WorldAgent) agent).hasEnded())
-            return;
+        if (!((WorldAgent) agent).hasEnded()) return;
         super.action();
         agent.phase = Phase.WAIT;
     }
@@ -42,7 +41,6 @@ public class WorldSendStart extends SendMsgBehaviour {
         ArrayList<DFAgentDescription> cmp = new ArrayList<DFAgentDescription>(Arrays.asList(agent.getCompetitor()));
         aud.addAll(cmp);
         DFAgentDescription[] arr = new DFAgentDescription[aud.size()];
-        arr = aud.toArray(arr);
-        return arr;
+        return aud.toArray(arr);
     }
 }

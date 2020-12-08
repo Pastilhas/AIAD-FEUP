@@ -20,8 +20,7 @@ public class WorldSendEnd extends SendMsgBehaviour {
 
     @Override
     public void action() {
-        if (agent.phase != Phase.SEND)
-            return;
+        if (agent.phase != Phase.SEND) return;
         super.action();
         agent.phase = Phase.INIT;
     }
@@ -42,8 +41,7 @@ public class WorldSendEnd extends SendMsgBehaviour {
         ArrayList<DFAgentDescription> cmp = new ArrayList<DFAgentDescription>(Arrays.asList(agent.getCompetitor()));
         aud.addAll(cmp);
         DFAgentDescription[] arr = new DFAgentDescription[aud.size()];
-        arr = aud.toArray(arr);
-        return arr;
+        return aud.toArray(arr);
     }
 
 }

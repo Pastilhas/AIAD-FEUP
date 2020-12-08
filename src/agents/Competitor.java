@@ -22,16 +22,12 @@ public class Competitor extends Person {
     @Override
     public void finalGuess() {
         float[] a = finalGuessCalc();
-        float currentGuess = a[0];
-        float maxConfidence = a[1];
-
-        guess = Math.round(currentGuess / maxConfidence);
+        guess = Math.round(a[0] / a[1]);
     }
 
     @Override
     public void parseAudienceMsg(ACLMessage msg) {
         String sender = msg.getSender().getLocalName();
-
         try {
             Integer content = (Integer) msg.getContentObject();
             logger.info(String.format("RECEIVED GUESS %7d FROM %10s", content, sender));
@@ -40,7 +36,6 @@ public class Competitor extends Person {
             System.err.println("Exception thrown while " + getLocalName() + " was receiving guess from " + sender);
             e.printStackTrace();
         }
-
         if (getAudience().length <= guesses.size()) {
             finalGuess();
             phase = Phase.READY;

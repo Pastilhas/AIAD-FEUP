@@ -87,21 +87,17 @@ public class WorldModel extends Repast3Launcher {
 
     @Override
     public void begin() {
-        if (world != null)
-            world.exiting();
+        if (world != null) world.exiting();
         long time = System.currentTimeMillis();
         world = new World(time);
         paramsToFile(time);
         super.begin();
-        if (!batchMode)
-            setupDisplay();
+        if (!batchMode) setupDisplay();
     }
 
     private void setupDisplay() {
         ArrayList<AgentNode> nodes = world.getNodes();
-
-        if (dsurf != null)
-            dsurf.dispose();
+        if (dsurf != null) dsurf.dispose();
         dsurf = new DisplaySurface(this, "Agents Display");
         registerDisplaySurface("Agents Display", dsurf);
         Network2DDisplay display = new Network2DDisplay(nodes, DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -109,21 +105,16 @@ public class WorldModel extends Repast3Launcher {
         dsurf.addZoomable(display);
         addSimEventListener(dsurf);
         dsurf.display();
-
-        if (plot != null)
-            plot.dispose();
+        if (plot != null) plot.dispose();
         plot = new OpenSequenceGraph("Accuracy Plot", this);
         plot.setXRange(0, 5000);
         plot.setYRange(0, World.MAX_PRICE);
         plot.setAxisTitles("time", "Average difference between guess and target price");
         plot.addSequence("N", new Sequence() {
             @Override
-            public double getSValue() {
-                return world.getPlotValue();
-            }
+            public double getSValue() { return world.getPlotValue(); }
         });
         plot.display();
-
         getSchedule().scheduleActionAtInterval(1, dsurf, "updateDisplay", Schedule.LAST);
         getSchedule().scheduleActionAtInterval(100, plot, "step", Schedule.LAST);
     }
@@ -152,38 +143,20 @@ public class WorldModel extends Repast3Launcher {
 
     private void parseParams(String[] args) {
         batchMode = true;
-        try {
-            nAudience = Integer.parseInt(args[1]);
-        } catch (Exception e) {
-            System.err.println("PARAMS: number of audience not defined");
-        }
-        try {
-            nCompetitors = Integer.parseInt(args[2]);
-        } catch (Exception e) {
-            System.err.println("PARAMS: number of competitors not defined");
-        }
-        try {
-            nItems = Integer.parseInt(args[3]);
-        } catch (Exception e) {
-            System.err.println("PARAMS: number of items not defined");
-        }
-        try {
-            highConfidenceRate = Float.parseFloat(args[5]);
-        } catch (Exception e) {
-            System.err.println("PARAMS: rate of high confidence not defined");
-        }
+        try { nAudience = Integer.parseInt(args[1]); } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
+        try { nCompetitors = Integer.parseInt(args[2]); } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
+        try { nItems = Integer.parseInt(args[3]); } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
+        try { highConfidenceRate = Float.parseFloat(args[5]); } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
     }
 
     private void paramsToFile(long time) {
         File file = new File("logs/" + time + "/params.log");
-
         try {
-            if (!file.createNewFile())
-                return;
+            if (!file.createNewFile()) return;
         } catch (IOException e1) {
             System.err.println("Error creating params file");
+            return;
         }
-
         try (FileWriter writer = new FileWriter(file);) {
             writer.write("batchMode=" + batchMode + "\n");
             writer.write("nAudience=" + nAudience + "\n");
@@ -192,6 +165,7 @@ public class WorldModel extends Repast3Launcher {
             writer.write("highConfidenceRate=" + highConfidenceRate + "\n");
         } catch (Exception e) {
             System.err.println("Error writing params file");
+            return;
         }
     }
 }
