@@ -110,9 +110,13 @@ public class WorldModel extends Repast3Launcher {
         plot.setXRange(0, 5000);
         plot.setYRange(0, World.MAX_PRICE);
         plot.setAxisTitles("time", "Average difference between guess and target price");
-        plot.addSequence("N", new Sequence() {
+        plot.addSequence("Average", new Sequence() {
             @Override
-            public double getSValue() { return world.getPlotValue(); }
+            public double getSValue() { return world.getAvgValue(); }
+        });
+        plot.addSequence("Difference", new Sequence() {
+            @Override
+            public double getSValue() { return world.getDiffValue(); }
         });
         plot.display();
         getSchedule().scheduleActionAtInterval(1, dsurf, "updateDisplay", Schedule.LAST);

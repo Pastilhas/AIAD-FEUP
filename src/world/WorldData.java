@@ -6,18 +6,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import agents.Audience;
 import agents.Competitor;
 
 public class WorldData {
-    private Integer lastAvg = 0;
-    private final HashMap<String, Integer> winners;
-    private final HashMap<Integer, Integer[]> guesses;
+    private Integer avg = 0;
+    private Integer diff = 0;
+    private final HashMap<String, Integer> winners = new HashMap<>();;
+    private final HashMap<String, Integer> helpers = new HashMap<>();;
+    private final HashMap<Integer, Integer[]> guesses = new HashMap<>();;
     private World world;
 
     public WorldData(World world) {
         this.world = world;
-        winners = new HashMap<>();
-        guesses = new HashMap<>();
     }
 
     public void newRound() {
@@ -35,24 +36,30 @@ public class WorldData {
             if (g < min) min = g;
             if (g > max) max = g;
         }
-        lastAvg = (max + min) / 2;
-        guesses.put(world.getRound(), new Integer[] { min, max });
+        avg = (max + min) / 2;
+        diff = max - min;
+        guesses.put(world.getRound(), new Integer[] { min, max, avg, diff });
     }
 
     private void putWinner() {
-        String winner = null;
+        Competitor winner = null;
         Integer min = Integer.MAX_VALUE;
         int price = world.getPrice();
         for (Competitor c : world.getCompetitors()) {
             Integer g = c.getGuess();
             if (g == null) continue;
             g = g - price;
-            if (g < min) {
-                min = g;
-                winner = c.getLocalName();
-            }
+            if (g > min) continue;
+            min = g;
+            winner = c;
         }
-        winners.merge(winner, 1, Integer::sum);
+        winners.merge(winner.getLocalName(), 1, Integer::sum);
+        int helper = 0;
+        for(Audience a : world.getAudience()) { 
+            a.checkCompetitor(winner.getLocalName(), winner.getTeam());
+            if(a.getCompatibility().get(winner.getLocalName())) helper++;
+        }
+        helpers.putIfAbsent(winner.getLocalName(), helper);
     }
 
     public void writeData(long time) {
@@ -68,16 +75,17 @@ public class WorldData {
             return;
         }
         try (FileWriter guessesW = new FileWriter(guessesF); FileWriter winnersW = new FileWriter(winnersF);) {
-            guessesW.write("key,min,max,avg\n");
+            guessesW.write("round,min,max,avg,diff\n");
             for (Entry<Integer, Integer[]> e : guesses.entrySet()) {
-                Integer key = e.getKey(), v1 = e.getValue()[0], v2 = e.getValue()[1], avg = (v1+v2)/2;
-                guessesW.write(key + "," + v1 + "," + v2 + "," + avg + "\n");
+                Integer key = e.getKey(), v1 = e.getValue()[0], v2 = e.getValue()[1], v3 = e.getValue()[2], v4 = e.getValue()[3];
+                guessesW.write(String.format("%d,%d,%d,%d,%d%n", key, v1, v2, v3, v4));
             }
-            winnersW.write("id,wins\n");
+            winnersW.write("id,wins,help\n");
             for (Entry<String, Integer> e : winners.entrySet()) {
                 String key = e.getKey();
                 Integer wins = e.getValue();
-                winnersW.write(key + "," + wins + "\n");
+                Integer help = helpers.get(key);
+                winnersW.write(String.format("%s,%d,%d%n", key, wins, help));
             }
         } catch (Exception e) {
             System.err.println("Error writing to data files");
@@ -85,6 +93,10 @@ public class WorldData {
     }
 
     Integer getLastAvg() {
-        return lastAvg;
+        return avg;
     }
+
+	public double getLastDiff() {
+		return diff;
+	}
 }

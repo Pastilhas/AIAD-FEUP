@@ -28,7 +28,7 @@ public class World {
     public static final int MAX_PRICE = 15000;
 
     private WorldAgent worldAgent;
-    private final WorldData worldData;
+    private final WorldData worldData = new WorldData(this);;
     private final long time;
 
     private final ArrayList<String> teams = new ArrayList<>(Arrays.asList("Green", "Yellow", "Blue", "Red"));
@@ -42,7 +42,6 @@ public class World {
     World(long time) {
         this.time = time;
         setupLogs();
-        worldData = new WorldData(this);
     }
 
     public ArrayList<String> getTeams() {
@@ -215,7 +214,11 @@ public class World {
         System.out.println("Bye bye...");
     }
 
-    public double getPlotValue() {
+    public double getAvgValue() {
         return worldData.getLastAvg();
     }
+
+	public double getDiffValue() {
+        return worldData.getLastDiff();
+	}
 }
