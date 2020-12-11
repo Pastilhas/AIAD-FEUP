@@ -10,7 +10,7 @@ Made by [João Campos](https://github.com/Pastilhas). *11/2020*
 5. [To run](#to-run)
 
 ## Objective
-The objective of the first part of this work is to implement communication between agents, and for this communication to affect the decisions these agents take. The second part consists in adapting the previous part to use Repast3.
+The objective of the first part of this work is to implement communication between agents, and for this communication to affect the decisions these agents take. The first part used JADE to achieve this. The second part consists in adapting the previous part to use Repast3. Repast3 runs on a single thread, unlike JADE which runs on one thread per agent. Additionally Repast3 allows displaying networks of agents and plots of variables to visualize what agents are doing.
 
 ## Description
 The agents in this project play a version of *The Price Is Right* where there are two types of agents: audience and competitors.
