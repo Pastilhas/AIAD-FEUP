@@ -12,9 +12,9 @@ import agents.Competitor;
 public class WorldData {
     private Integer avg = 0;
     private Integer diff = 0;
-    private final HashMap<String, Integer> winners = new HashMap<>();;
-    private final HashMap<String, Integer> helpers = new HashMap<>();;
-    private final HashMap<Integer, Integer[]> guesses = new HashMap<>();;
+    private final HashMap<String, Integer> winners = new HashMap<>();
+    private final HashMap<String, Integer> helpers = new HashMap<>();
+    private final HashMap<Integer, Integer[]> guesses = new HashMap<>();
     private World world;
 
     public WorldData(World world) {

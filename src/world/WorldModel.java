@@ -150,7 +150,7 @@ public class WorldModel extends Repast3Launcher {
         try { nAudience = Integer.parseInt(args[1]); } catch (Exception e) { System.err.println("PARAMS: number of audience not defined"); }
         try { nCompetitors = Integer.parseInt(args[2]); } catch (Exception e) { System.err.println("PARAMS: number of competitors not defined"); }
         try { nItems = Integer.parseInt(args[3]); } catch (Exception e) { System.err.println("PARAMS: number of items not defined"); }
-        try { highConfidenceRate = Float.parseFloat(args[5]); } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
+        try { highConfidenceRate = Float.parseFloat(args[4]); } catch (Exception e) { System.err.println("PARAMS: rate of high confidence not defined"); }
     }
 
     private void paramsToFile(long time) {

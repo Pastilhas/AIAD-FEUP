@@ -6,8 +6,8 @@ Made by [João Campos](https://github.com/Pastilhas). *11/2020*
 1. [Objective](#objective)
 2. [Description](#description)
 3. [First Delivery](#first-delivery)
-3. [First Delivery](#second-delivery)
-4. [To run](#to-run)
+4. [Second Delivery](#second-delivery)
+5. [To run](#to-run)
 
 ## Objective
 The objective of the first part of this work is to implement communication between agents, and for this communication to affect the decisions these agents take. The second part consists in adapting the previous part to use Repast3.
